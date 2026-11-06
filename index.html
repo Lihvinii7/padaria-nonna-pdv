@@ -301,7 +301,7 @@
             </button>
           </div>
 
-          <!-- Troco -->
+          <!-- Troco com Guia Visual de Notas e Moedas -->
           <div id="cashChangeBox" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 space-y-2">
             <span class="text-xs font-black uppercase text-emerald-950 flex items-center gap-1">
               <i class="fa-solid fa-coins text-emerald-600"></i> Troco em Dinheiro
@@ -332,7 +332,18 @@
               <button onclick="setCashReceived(100)" class="flex-1 py-1 bg-white hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[10px] font-black text-slate-700">R$ 100</button>
               <button onclick="setExactCash()" class="flex-1 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-black">Exato</button>
             </div>
+
+            <!-- GUIA VISUAL DE QUAIS NOTAS E MOEDAS ENTREGAR AO CLIENTE -->
+            <div id="trocoSugestaoBox" class="hidden pt-2 border-t border-emerald-200/80">
+              <p class="text-[10px] font-black text-emerald-900 uppercase tracking-wide flex items-center gap-1 mb-1.5">
+                <i class="fa-solid fa-hand-holding-hand text-emerald-600"></i> Notas e Moedas para Entregar:
+              </p>
+              <div id="trocoItensContainer" class="flex flex-wrap gap-1.5 items-center">
+                <!-- Ícones gerados automaticamente -->
+              </div>
+            </div>
           </div>
+
 
           <!-- Módulo PIX -->
           <div id="pixMachineBox" class="hidden bg-sky-50 border-2 border-sky-300 rounded-2xl p-3 space-y-2">
@@ -1085,25 +1096,74 @@
       }
     }
 
+    // Separa as notas e moedas mais eficientes para o troco
+    function getChangeBreakdown(amount) {
+      let cents = Math.round(amount * 100);
+      const items = [
+        { type: 'nota', val: 10000, label: 'R$ 100', color: 'bg-cyan-600 text-white border-cyan-700' },
+        { type: 'nota', val: 5000,  label: 'R$ 50',  color: 'bg-amber-600 text-white border-amber-700' },
+        { type: 'nota', val: 2000,  label: 'R$ 20',  color: 'bg-yellow-500 text-slate-900 border-yellow-600' },
+        { type: 'nota', val: 1000,  label: 'R$ 10',  color: 'bg-rose-600 text-white border-rose-700' },
+        { type: 'nota', val: 500,   label: 'R$ 5',   color: 'bg-purple-600 text-white border-purple-700' },
+        { type: 'nota', val: 200,   label: 'R$ 2',   color: 'bg-sky-600 text-white border-sky-700' },
+        { type: 'moeda', val: 100,  label: 'R$ 1',   color: 'bg-amber-100 text-amber-900 border-amber-400' },
+        { type: 'moeda', val: 50,   label: '50¢',    color: 'bg-slate-200 text-slate-800 border-slate-400' },
+        { type: 'moeda', val: 25,   label: '25¢',    color: 'bg-amber-200 text-amber-900 border-amber-400' },
+        { type: 'moeda', val: 10,   label: '10¢',    color: 'bg-amber-300 text-amber-950 border-amber-500' },
+        { type: 'moeda', val: 5,    label: '5¢',     color: 'bg-orange-300 text-orange-950 border-orange-500' }
+      ];
+
+      const result = [];
+      for (const item of items) {
+        if (cents >= item.val) {
+          const qty = Math.floor(cents / item.val);
+          cents %= item.val;
+          result.push({ ...item, qty });
+        }
+      }
+      return result;
+    }
+
     function calculateChange() {
       const grandTotal = getGrandTotal();
       const rawCash = document.getElementById('cashReceivedInput').value.trim();
       const cash = parseFloat(rawCash.replace(',', '.'));
       const changeDisplay = document.getElementById('changeDisplay');
+      const sugestaoBox = document.getElementById('trocoSugestaoBox');
+      const itensContainer = document.getElementById('trocoItensContainer');
 
       if (isNaN(cash) || cash <= 0) {
         changeDisplay.innerText = "R$ 0,00";
         changeDisplay.className = "text-lg font-black text-slate-400 font-mono-receipt leading-none mt-0.5";
+        if (sugestaoBox) sugestaoBox.classList.add('hidden');
         return;
       }
 
       const diff = cash - grandTotal;
-      if (diff >= 0) {
+      if (diff > 0.009) {
         changeDisplay.innerText = `R$ ${diff.toFixed(2).replace('.', ',')}`;
         changeDisplay.className = "text-lg font-black text-emerald-700 font-mono-receipt leading-none mt-0.5";
+
+        // Exibe o crachá de cada cédula e moeda necessária
+        if (sugestaoBox && itensContainer) {
+          const breakdown = getChangeBreakdown(diff);
+          itensContainer.innerHTML = breakdown.map(item => `
+            <div class="flex items-center gap-1 px-2 py-1 rounded-lg border shadow-xs font-black text-xs ${item.color}">
+              <span class="text-[10px] bg-black/20 px-1 py-0.5 rounded font-bold">${item.qty}x</span>
+              <span class="tracking-tight">${item.type === 'nota' ? '💵' : '🪙'} ${item.label}</span>
+            </div>
+          `).join('');
+          sugestaoBox.classList.remove('hidden');
+        }
+
+      } else if (Math.abs(diff) <= 0.009) {
+        changeDisplay.innerText = "R$ 0,00";
+        changeDisplay.className = "text-lg font-black text-emerald-700 font-mono-receipt leading-none mt-0.5";
+        if (sugestaoBox) sugestaoBox.classList.add('hidden');
       } else {
         changeDisplay.innerText = `Falta R$ ${Math.abs(diff).toFixed(2).replace('.', ',')}`;
         changeDisplay.className = "text-xs font-black text-rose-600 font-mono-receipt leading-none mt-0.5";
+        if (sugestaoBox) sugestaoBox.classList.add('hidden');
       }
     }
 
