@@ -649,7 +649,7 @@
       </p>
       
       <p id="authModalDescription" class="text-sm text-slate-600 mt-3 font-medium px-2">
-        Digite a senha de administrador para gerenciar produtos e chaves da nuvem.
+        Digite a senha de administrador para gerenciar produtos 
       </p>
 
       <div class="mt-6 text-left">
@@ -1345,7 +1345,7 @@
     }
 
     function openConfigModal() {
-      requestAdminAuth("Digite a senha de administrador para gerenciar produtos e chaves do Supabase:", () => {
+      requestAdminAuth("Digite a senha de administrador para gerenciar produtos:", () => {
         const modal = document.getElementById('configModal');
         if (modal) {
           modal.classList.remove('hidden');
