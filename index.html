@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Padaria da Nonna | PDV & Frente de Caixa</title>
   
-  <!-- Favicon para a aba do navegador -->
+  <!-- Ícone da aba do navegador (Favicon) -->
   <link rel="icon" type="image/png" href="logo.png">
-  <link rel="shortcut icon" href="logo.png" type="image/x-icon">
-  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="shortcut icon" href="logo.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,7 +19,6 @@
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .font-mono-receipt { font-family: 'Space Mono', monospace; }
 
-    /* FORMATAÇÃO EXATA PARA ELGIN i9 (BOBINA 80mm / ÁREA DE IMPRESSÃO 72mm) */
     #printableReceipt, #printableClosingReceipt {
       display: none;
     }
@@ -54,21 +52,20 @@
 <body class="bg-[#fbf9f4] text-slate-800 min-h-screen flex flex-col antialiased">
 
   <!-- ======================================================== -->
-  <!-- TOPO: BARRA VERMELHA + BANNER DISCRETO (SEM CORTES)      -->
+  <!-- TOPO: BARRA VERMELHA + BANNER DISCRETO                   -->
   <!-- ======================================================== -->
   <header class="w-full no-print shadow-xs border-b border-slate-200">
     
-    <!-- 1. Barra Vermelha Superior Compacta -->
     <div class="w-full bg-[#a81418] text-white px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 border-b border-[#820d11]">
       <div class="flex items-center space-x-3">
-        <!-- Logo com proteção contra sumiço -->
-        <div class="w-10 h-10 rounded-full bg-white p-0.5 shadow-sm shrink-0 border-2 border-amber-300 flex items-center justify-center overflow-hidden">
+        <!-- Logo Circular com verificação de extensões -->
+        <div class="w-10 h-10 rounded-full bg-white p-0.5 shadow-md shrink-0 border-2 border-amber-300 flex items-center justify-center overflow-hidden">
           <img 
             src="logo.png" 
             alt="Logo Nonna" 
-            id="headerLogoImg"
+            id="mainHeaderLogo"
             class="w-full h-full object-contain"
-            onerror="if(!this.dataset.triedJpg){ this.dataset.triedJpg='1'; this.src='logo.jpg'; } else { this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-wheat-awn text-amber-600 text-lg\'></i>'; }"
+            onerror="if(!this.dataset.retry){ this.dataset.retry='jpg'; this.src='logo.jpg'; } else if(this.dataset.retry==='jpg'){ this.dataset.retry='PNG'; this.src='logo.PNG'; }"
           >
         </div>
         <div>
@@ -81,7 +78,6 @@
         </div>
       </div>
 
-      <!-- Botões de Ação do Caixa -->
       <div class="flex items-center space-x-2">
         <div class="hidden sm:flex items-center bg-black/25 px-2.5 py-1.5 rounded-lg border border-white/10 text-[11px]">
           <span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
@@ -106,12 +102,11 @@
       </div>
     </div>
 
-    <!-- 2. Banner Esticado de Lateral a Lateral (Altura Fina & Zero Cortes) -->
+    <!-- Banner Panorâmico -->
     <div class="w-full bg-[#fbf9f4] overflow-hidden flex items-center justify-center border-b-2 border-emerald-700">
       <img 
         src="banner.png" 
         alt="Padaria da Nonna Banner" 
-        id="topBannerImg"
         class="w-full h-28 sm:h-32 md:h-36 block"
         style="object-fit: fill;"
         onerror="if (this.src.endsWith('.png')) { this.src = 'banner.jpg'; } else { this.style.opacity = '0.5'; }"
@@ -121,14 +116,14 @@
   </header>
 
   <!-- ======================================================== -->
-  <!-- CORPO PRINCIPAL DO FRENTE DE CAIXA                       -->
+  <!-- CORPO PRINCIPAL                                          -->
   <!-- ======================================================== -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 no-print">
 
-    <!-- LADO ESQUERDO: PISTOLA + VALOR NA FRENTE + CATÁLOGO COMPLETO (7 Colunas) -->
+    <!-- LADO ESQUERDO -->
     <div class="lg:col-span-7 flex flex-col space-y-4">
       
-      <!-- ENTRADA DA PISTOLA & PESQUISA POR INICIAIS (AUTOCOMPLETE) -->
+      <!-- Entrada Pistola / Busca -->
       <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-amber-100/80 space-y-3">
         <div class="flex items-center justify-between">
           <label class="block text-xs font-black uppercase text-slate-500 tracking-wider">
@@ -164,7 +159,7 @@
         <div id="autocompleteDropdown" class="hidden bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden divide-y divide-slate-100 mt-1 max-h-60 overflow-y-auto"></div>
       </div>
 
-      <!-- LANÇAMENTO DE VALOR MANUAL NA FRENTE DA TELA (GRANDE E DESTACADO) -->
+      <!-- Balcão de Pesagem -->
       <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3">
         <div class="flex items-center justify-between pb-1 border-b border-amber-200">
           <h2 class="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
@@ -222,7 +217,7 @@
         </div>
       </div>
 
-      <!-- CATÁLOGO DE PRODUTOS VARIADOS -->
+      <!-- Catálogo -->
       <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-amber-100/80 flex-1 flex flex-col">
         <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 mb-3 gap-2">
           <h2 class="text-xs font-black uppercase text-slate-600 tracking-wider">
@@ -247,13 +242,10 @@
 
     </div>
 
-    <!-- LADO DIREITO: CUPOM + MÓDULO PIX MULTI-MAQUININHA + TROCO (5 Colunas) -->
+    <!-- LADO DIREITO: CUPOM & FECHAMENTO -->
     <div class="lg:col-span-5 flex flex-col space-y-4">
-      
       <div class="bg-white rounded-3xl p-5 shadow-md border-2 border-slate-200 flex flex-col justify-between min-h-[600px]">
-        
         <div>
-          <!-- Cabeçalho do Cupom -->
           <div class="pb-3 border-b-2 border-dashed border-slate-200 flex items-center justify-between">
             <div class="flex items-center space-x-2">
               <div class="w-8 h-8 rounded-xl bg-[#c5161d] text-white flex items-center justify-center text-xs font-bold shadow-xs">
@@ -269,7 +261,6 @@
             </button>
           </div>
 
-          <!-- Lista de Itens -->
           <div class="overflow-y-auto max-h-48 mt-3 divide-y divide-slate-100 font-mono-receipt text-xs" id="cartItemsContainer">
             <div class="text-center py-12 text-slate-400 font-sans">
               <i class="fa-solid fa-cart-shopping text-3xl mb-2 text-slate-300"></i>
@@ -279,10 +270,7 @@
           </div>
         </div>
 
-        <!-- TOTALIZADOR, MÚLTIPLAS MAQUININHAS PIX, TROCO & FINALIZAR -->
         <div class="pt-4 border-t-2 border-slate-200 space-y-3">
-          
-          <!-- TOTAL A PAGAR -->
           <div class="bg-slate-900 text-white p-3.5 rounded-2xl flex items-center justify-between shadow-sm">
             <div>
               <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">TOTAL DA COMPRA</span>
@@ -291,7 +279,6 @@
             <span class="text-xs font-bold text-slate-400" id="cartItemsCountDisplay">0 itens</span>
           </div>
 
-          <!-- FORMAS DE PAGAMENTO -->
           <div class="grid grid-cols-4 gap-1.5">
             <button onclick="selectPayment('Dinheiro')" id="payBtnDinheiro" class="pay-btn py-2 rounded-xl text-xs font-black border border-slate-200 bg-[#1b5e3a] text-white transition text-center">
               Dinheiro
@@ -307,13 +294,11 @@
             </button>
           </div>
 
-          <!-- CALCULADORA DE TROCO (QUANDO FOR DINHEIRO) -->
+          <!-- Troco -->
           <div id="cashChangeBox" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-black uppercase text-emerald-950 flex items-center gap-1">
-                <i class="fa-solid fa-coins text-emerald-600"></i> Troco em Dinheiro
-              </span>
-            </div>
+            <span class="text-xs font-black uppercase text-emerald-950 flex items-center gap-1">
+              <i class="fa-solid fa-coins text-emerald-600"></i> Troco em Dinheiro
+            </span>
 
             <div class="grid grid-cols-2 gap-2">
               <div>
@@ -342,7 +327,7 @@
             </div>
           </div>
 
-          <!-- SELETOR DE MÚLTIPLAS MAQUININHAS PIX -->
+          <!-- Módulo PIX -->
           <div id="pixMachineBox" class="hidden bg-sky-50 border-2 border-sky-300 rounded-2xl p-3 space-y-2">
             <span class="text-xs font-black uppercase text-sky-950 flex items-center gap-1">
               <i class="fa-brands fa-pix text-sky-600 text-sm"></i> Qual Maquininha / Conta está usando?
@@ -369,7 +354,7 @@
             </div>
           </div>
 
-          <!-- BOTÃO FECHAR VENDA NA ELGIN i9 -->
+          <!-- Botão Imprimir -->
           <button 
             onclick="finalizeSaleAndPrint()" 
             id="finishSaleBtn" 
@@ -379,18 +364,13 @@
             <i class="fa-solid fa-print"></i>
             <span>Fechar Venda & Imprimir na Elgin i9</span>
           </button>
-
         </div>
-
       </div>
-
     </div>
 
   </main>
 
-  <!-- ======================================================== -->
-  <!-- 1. COMPROVANTE TÉRMICO DE VENDA (ELGIN i9 - 80mm)        -->
-  <!-- ======================================================== -->
+  <!-- Cupom de Venda Térmico -->
   <div id="printableReceipt" class="font-mono-receipt text-black">
     <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 5px;">
       <h2 style="font-size: 13px; font-weight: bold; margin: 0;">PADARIA DA NONNA</h2>
@@ -439,9 +419,7 @@
     </div>
   </div>
 
-  <!-- ======================================================== -->
-  <!-- 2. COMPROVANTE DE FECHAMENTO DIÁRIO DE CAIXA (ELGIN i9)  -->
-  <!-- ======================================================== -->
+  <!-- Fechamento Diário Térmico -->
   <div id="printableClosingReceipt" class="font-mono-receipt text-black">
     <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 5px;">
       <h2 style="font-size: 13px; font-weight: bold; margin: 0;">PADARIA DA NONNA</h2>
@@ -492,12 +470,9 @@
     </div>
   </div>
 
-  <!-- ======================================================== -->
-  <!-- MODAL: RESUMO DO DIA, ENTRADAS & FECHAMENTO DE CAIXA     -->
-  <!-- ======================================================== -->
+  <!-- Modal Histórico / Fechamento -->
   <div id="closingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 no-print">
     <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-      
       <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
         <div class="flex items-center space-x-2.5">
           <div class="w-10 h-10 rounded-2xl bg-emerald-700 text-white flex items-center justify-center text-lg">
@@ -538,7 +513,6 @@
         <span id="modalSalesCount" class="text-xs font-bold text-emerald-200">0 vendas</span>
       </div>
 
-      <!-- Sangria / Saída -->
       <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl space-y-2">
         <span class="text-xs font-black text-amber-950 flex items-center gap-1">
           <i class="fa-solid fa-arrow-down-long text-amber-600"></i> Registrar Saída / Sangria (Ex: gás, despesa rápida)
@@ -560,16 +534,12 @@
           <span>Imprimir na Elgin i9</span>
         </button>
       </div>
-
     </div>
   </div>
 
-  <!-- ======================================================== -->
-  <!-- MODAL: GERENCIAMENTO DE PRODUTOS (ADICIONAR / EDITAR)    -->
-  <!-- ======================================================== -->
+  <!-- Modal Produtos & Banco -->
   <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 no-print">
     <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-      
       <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
         <div class="flex items-center space-x-2.5">
           <div class="w-10 h-10 rounded-2xl bg-[#c5161d] text-white flex items-center justify-center text-lg">
@@ -583,7 +553,6 @@
         <button onclick="closeConfigModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <!-- Formulário de Cadastro / Edição -->
       <form onsubmit="handleSaveProduct(event)" class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
         <div class="flex items-center justify-between">
           <h4 id="formProductTitle" class="text-xs font-black uppercase text-slate-700">Cadastrar Novo Produto</h4>
@@ -633,17 +602,14 @@
         </button>
       </form>
 
-      <!-- Lista Completa de Produtos com Botão de Alterar Preço e Excluir -->
       <div class="space-y-2">
         <h4 class="text-xs font-black uppercase text-slate-700 flex items-center justify-between">
           <span>Produtos Cadastrados na Loja</span>
           <span class="text-[10px] text-slate-400 font-normal">Clique em editar para mudar o preço</span>
         </h4>
-        
         <div class="max-h-60 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-2xl" id="modalProductsTableBody"></div>
       </div>
 
-      <!-- Configuração de Chaves do Supabase -->
       <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs space-y-2">
         <span class="font-black text-emerald-950 flex items-center gap-1.5">
           <i class="fa-solid fa-cloud text-emerald-600"></i> Conexão com Supabase (Nuvem)
@@ -654,29 +620,27 @@
         </div>
         <button onclick="saveSupabaseConfig()" class="w-full py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs transition">Salvar Chaves do Supabase</button>
       </div>
-
     </div>
   </div>
 
   <!-- ======================================================== -->
-  <!-- MODAL DE AUTENTICAÇÃO ADMINISTRATIVA (GRANDE E ELEGANTE)  -->
+  <!-- MODAL DE SENHA PERSONALIZADO, GRANDE E LEGÍVEL          -->
   <!-- ======================================================== -->
   <div id="authPasswordModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all p-7 sm:p-9 text-center">
       
-      <!-- Logo Oficial com Borda Dourada e Sombra Macia -->
+      <!-- Logo do Modal -->
       <div class="flex justify-center mb-5">
         <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white p-2.5 shadow-xl border-4 border-amber-300 flex items-center justify-center overflow-hidden">
           <img 
             src="logo.png" 
             alt="Logo Padaria da Nonna" 
             class="w-full h-full object-contain"
-            onerror="if(!this.dataset.triedJpg){ this.dataset.triedJpg='1'; this.src='logo.jpg'; } else { this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-wheat-awn text-amber-600 text-4xl\'></i>'; }"
+            onerror="if(!this.dataset.retry){ this.dataset.retry='jpg'; this.src='logo.jpg'; } else if(this.dataset.retry==='jpg'){ this.dataset.retry='PNG'; this.src='logo.PNG'; }"
           >
         </div>
       </div>
 
-      <!-- Títulos Informativos de Fácil Leitura -->
       <h3 class="text-2xl sm:text-3xl font-black text-[#a81418] tracking-tight">
         Acesso Administrativo
       </h3>
@@ -685,10 +649,9 @@
       </p>
       
       <p id="authModalDescription" class="text-sm text-slate-600 mt-3 font-medium px-2">
-        Digite a senha de administrador para acessar o cadastro de produtos e chaves da nuvem.
+        Digite a senha de administrador para gerenciar produtos e chaves da nuvem.
       </p>
 
-      <!-- Campo de Senha Amplo -->
       <div class="mt-6 text-left">
         <label for="adminAuthInput" class="block text-xs font-black text-slate-700 mb-2 uppercase tracking-wide">
           Senha de Administrador:
@@ -717,7 +680,6 @@
         </p>
       </div>
 
-      <!-- Botões de Ação Grandes e Espaçados -->
       <div class="grid grid-cols-2 gap-3.5 mt-8">
         <button 
           onclick="closeAuthPasswordModal()" 
@@ -738,7 +700,7 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- JAVASCRIPT: MOTOR COMPLETO DA PADARIA DA NONNA           -->
+  <!-- JAVASCRIPT: MOTOR E REGRAS DE NEGÓCIO                   -->
   <!-- ======================================================== -->
   <script>
     const defaultProducts = [
@@ -779,9 +741,6 @@
       return defaultProducts;
     }
 
-    // ==========================================
-    // CONFIGURAÇÃO DIRETA DO SUPABASE
-    // ==========================================
     const SUPABASE_URL = localStorage.getItem('nonna_supabase_url') || 'https://smzeufyrlibrhwyyrofz.supabase.co';
     const SUPABASE_ANON_KEY = localStorage.getItem('nonna_supabase_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtemV1ZnlybGlicmh3eXlyb2Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODM0NjEsImV4cCI6MjEwOTU1OTQ2MX0.yM1y6IazTmC5NzwcK0xlRzl8EdXWaiHat48lt1bLGa8';
 
@@ -789,7 +748,6 @@
     if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
       try {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log("Supabase conectado com sucesso!");
       } catch (e) {
         console.error("Erro ao conectar no Supabase:", e);
       }
@@ -813,32 +771,28 @@
 
     const scannerInput = document.getElementById('barcodeScannerInput');
     
-    // Foco automático inteligente (sem travar a digitação dos modais de senha e produtos)
+    // CORREÇÃO CRÍTICA DE FOCO: Não rouba o foco quando qualquer modal ou input está em uso
     function keepFocus() {
       const modalConfigOpen = document.getElementById('configModal').classList.contains('flex');
       const modalClosingOpen = document.getElementById('closingModal').classList.contains('flex');
       const modalAuthOpen = !document.getElementById('authPasswordModal').classList.contains('hidden');
 
-      const isTypingInSpecialInput = [
-        'quickManualPriceInput',
-        'cashReceivedInput',
-        'sangriaMotivo',
-        'sangriaValor',
-        'adminAuthInput',
-        'newProdBarcode',
-        'newProdPrice',
-        'newProdName',
-        'supabaseUrlInput',
-        'supabaseKeyInput'
-      ].includes(document.activeElement?.id);
+      // Se qualquer modal estiver aberto, NUNCA puxe o foco para a pistola
+      if (modalConfigOpen || modalClosingOpen || modalAuthOpen) {
+        return;
+      }
 
-      if (!modalConfigOpen && !modalClosingOpen && !modalAuthOpen && !isTypingInSpecialInput && document.activeElement !== scannerInput) {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA')) {
+        return;
+      }
+
+      if (document.activeElement !== scannerInput) {
         scannerInput.focus();
       }
     }
     window.addEventListener('click', () => setTimeout(keepFocus, 200));
 
-    // 1. LEITURA PELA PISTOLA OU INICIAIS
     function handleScannerKey(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -852,7 +806,6 @@
 
       document.getElementById('autocompleteDropdown').classList.add('hidden');
 
-      // Balança Toledo EAN-13 (Início com 2 e 13 dígitos)
       if (val.startsWith('2') && val.length === 13) {
         const prodCode = parseInt(val.substring(1, 6));
         const cents = parseInt(val.substring(7, 12));
@@ -866,7 +819,6 @@
         return;
       }
 
-      // Código de Barras Exato
       const exactBarcode = products.find(p => p.barcode === val);
       if (exactBarcode) {
         if (exactBarcode.variable) {
@@ -878,7 +830,6 @@
         return;
       }
 
-      // Autocomplete por iniciais
       const lower = val.toLowerCase();
       const matchedByName = products.filter(p => p.name.toLowerCase().includes(lower));
       
@@ -893,7 +844,6 @@
         return;
       }
 
-      // Se for número digitado direto
       const numericVal = parseFloat(val.replace(',', '.'));
       if (!isNaN(numericVal) && numericVal > 0) {
         addToCart('Item Avulso / Padaria', numericVal, 1);
@@ -905,7 +855,6 @@
       scannerInput.value = '';
     }
 
-    // 2. AUTOCOMPLETE
     function handleLiveSearch(text) {
       const dd = document.getElementById('autocompleteDropdown');
       const val = text.trim().toLowerCase();
@@ -951,7 +900,6 @@
       }
     }
 
-    // 3. VALOR MANUAL NA FRENTE
     function prepareManualInput(itemName) {
       const select = document.getElementById('quickManualItemSelect');
       let found = false;
@@ -993,7 +941,6 @@
       addQuickManualItem();
     }
 
-    // 4. CARRINHO & TOTAIS
     function addToCart(name, price, qty = 1) {
       currentCart.push({
         id: Date.now() + Math.random(),
@@ -1070,7 +1017,6 @@
       finishBtn.disabled = false;
     }
 
-    // 5. FORMAS DE PAGAMENTO & TROCO
     function selectPayment(method) {
       currentPaymentMethod = method;
       document.querySelectorAll('.pay-btn').forEach(b => {
@@ -1149,7 +1095,6 @@
       calculateChange();
     }
 
-    // 6. FECHAR VENDA & IMPRESSÃO NA ELGIN i9 (80mm)
     function finalizeSaleAndPrint() {
       if (currentCart.length === 0) return;
 
@@ -1219,7 +1164,6 @@
       localStorage.setItem('nonna_sales_history_v4', JSON.stringify(history));
     }
 
-    // 7. FECHAMENTO DE CAIXA DIÁRIO & SANGRIA
     function getTodaySales() {
       const history = JSON.parse(localStorage.getItem('nonna_sales_history_v4') || '[]');
       const todayStr = new Date().toISOString().split('T')[0];
@@ -1330,7 +1274,9 @@
       document.getElementById('printableClosingReceipt').classList.remove('active-print');
     }
 
-    // 8. AUTENTICAÇÃO COM MODAL VISUAL E ELEGANTE
+    // ==========================================
+    // SISTEMA DE SENHA PERSONALIZADO (SEM ROUBO DE FOCO)
+    // ==========================================
     const ADMIN_PASSWORD = "nonna2026";
     let pendingAuthCallback = null;
 
@@ -1356,7 +1302,7 @@
 
       setTimeout(() => {
         if (input) input.focus();
-      }, 100);
+      }, 150);
     }
 
     function closeAuthPasswordModal() {
@@ -1429,7 +1375,6 @@
       });
     }
 
-    // 9. CATÁLOGO VISUAL & CRUD COMPLETO
     function renderProductsCatalog() {
       const grid = document.getElementById('productsQuickGrid');
       const cat = document.getElementById('categoryFilter').value;
@@ -1566,7 +1511,6 @@
       alert("Configurações do Supabase salvas com sucesso!");
     }
 
-    // Inicialização do sistema
     renderProductsCatalog();
     renderCart();
     setTimeout(keepFocus, 300);
