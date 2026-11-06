@@ -1227,7 +1227,19 @@
       document.getElementById('printableClosingReceipt').classList.remove('active-print');
     }
 
-    function clearDaySales() {
+   function clearDaySales() {
+      // 1. Trava de segurança por senha de administrador
+      if (sessionStorage.getItem('nonna_admin_auth') !== 'true') {
+        const pass = prompt("Área Restrita!\n\nDigite a senha de administrador para zerar o caixa do dia:");
+        if (pass === null) return; // Clicou em cancelar
+        if (pass !== ADMIN_PASSWORD) {
+          alert("Acesso negado: Senha incorreta! Os registros foram mantidos.");
+          return;
+        }
+        sessionStorage.setItem('nonna_admin_auth', 'true');
+      }
+
+      // 2. Confirmação e limpeza dos dados
       if (confirm("Deseja zerar os registros de vendas e sangrias de hoje?")) {
         localStorage.removeItem('nonna_sangrias_today_v4');
         const history = JSON.parse(localStorage.getItem('nonna_sales_history_v4') || '[]');
@@ -1321,11 +1333,31 @@
       document.getElementById('cancelEditBtn').classList.add('hidden');
     }
 
+   // Senha padrão de administrador (mude para a senha que preferir)
+    const ADMIN_PASSWORD = "nonna2026";
+
     function openConfigModal() {
-      resetProductForm();
-      renderModalProductsTable();
-      document.getElementById('configModal').classList.remove('hidden');
-      document.getElementById('configModal').classList.add('flex');
+      // Se já autenticou nesta sessão, abre direto
+      if (sessionStorage.getItem('nonna_admin_auth') === 'true') {
+        const modal = document.getElementById('configModal');
+        if (modal) modal.classList.remove('hidden');
+        renderProductListAdmin();
+        return;
+      }
+
+      // Solicita a senha para quem tentar entrar
+      const inputPass = prompt("Área Restrita (Administração / Supabase)\n\nDigite a senha para alterar produtos e configurações:");
+
+      if (inputPass === null) return; // Clicou em cancelar
+
+      if (inputPass === ADMIN_PASSWORD) {
+        sessionStorage.setItem('nonna_admin_auth', 'true');
+        const modal = document.getElementById('configModal');
+        if (modal) modal.classList.remove('hidden');
+        renderProductListAdmin();
+      } else {
+        alert("Acesso negado: Senha incorreta! O modo demonstração é somente leitura.");
+      }
     }
 
     function closeConfigModal() {
