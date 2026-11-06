@@ -6,11 +6,18 @@
   <title>Padaria da Nonna | PDV & Frente de Caixa</title>
   
   <!-- Ícone da aba do navegador (Favicon) -->
-  <link rel="icon" type="image/png" href="Logo.png">
-  <link rel="shortcut icon" href="Logo.png">
+  <link rel="icon" type="image/png" href="Logo.png?v=5">
+  <link rel="shortcut icon" href="Logo.png?v=5">
+  <link rel="apple-touch-icon" href="Logo.png?v=5">
+  <meta name="theme-color" content="#a81418">
 
+  <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Biblioteca Oficial do Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
@@ -58,16 +65,16 @@
     
     <div class="w-full bg-[#a81418] text-white px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 border-b border-[#820d11]">
       <div class="flex items-center space-x-3">
-        <!-- Logo Circular com verificação de extensões -->
-        <<div class="w-10 h-10 rounded-full bg-white p-0.5 shadow-md shrink-0 border-2 border-amber-300 flex items-center justify-center overflow-hidden">
-  <img 
-    src="Logo.png?v=3" 
-    alt="Logo Nonna" 
-    id="mainHeaderLogo"
-    class="w-full h-full object-contain"
-    onerror="if(!this.dataset.retry){ this.dataset.retry='jpg'; this.src='logo.jpg'; } else if(this.dataset.retry==='jpg'){ this.dataset.retry='PNG'; this.src='Logo.PNG'; }"
-  >
-</div>
+        <!-- Logo Circular -->
+        <div class="w-10 h-10 rounded-full bg-white p-0.5 shadow-md shrink-0 border-2 border-amber-300 flex items-center justify-center overflow-hidden">
+          <img 
+            src="Logo.png?v=5" 
+            alt="Logo Nonna" 
+            id="mainHeaderLogo"
+            class="w-full h-full object-contain"
+            onerror="if(!this.dataset.retry){ this.dataset.retry='jpg'; this.src='logo.jpg'; } else if(this.dataset.retry==='jpg'){ this.dataset.retry='PNG'; this.src='Logo.PNG'; }"
+          >
+        </div>
         <div>
           <h1 class="text-base sm:text-lg font-black leading-none text-white tracking-tight">
             Padaria da Nonna
@@ -547,7 +554,7 @@
           </div>
           <div>
             <h3 class="font-black text-slate-900 text-sm">Gerenciamento de Produtos & Preços</h3>
-            <p class="text-[11px] text-slate-400">Adicione, edite ou altere preços de qualquer item</p>
+            <p class="text-[11px] text-slate-400">Adicione, edite ou altere preços de qualquer item (Sincronizado na Nuvem)</p>
           </div>
         </div>
         <button onclick="closeConfigModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
@@ -598,7 +605,7 @@
         </div>
 
         <button type="submit" id="saveProdBtn" class="w-full py-2.5 bg-[#1b5e3a] hover:bg-emerald-800 text-white font-black rounded-xl text-xs shadow-sm transition">
-          + Salvar Produto
+          + Salvar Produto no Banco
         </button>
       </form>
 
@@ -609,7 +616,6 @@
         </h4>
         <div class="max-h-60 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-2xl" id="modalProductsTableBody"></div>
       </div>
-
       
     </div>
   </div>
@@ -640,7 +646,7 @@
       </p>
       
       <p id="authModalDescription" class="text-sm text-slate-600 mt-3 font-medium px-2">
-        Digite a senha de administrador para gerenciar produtos 
+        Digite a senha de administrador para gerenciar produtos
       </p>
 
       <div class="mt-6 text-left">
@@ -699,32 +705,27 @@
       { id: 102, barcode: "102", name: "Pão Doce de Creme", price: 0.00, category: "Padaria", variable: true },
       { id: 103, barcode: "103", name: "Pão de Queijo Mineiro", price: 0.00, category: "Padaria", variable: true },
       { id: 104, barcode: "104", name: "Torrada Caseira da Nonna", price: 4.50, category: "Padaria", variable: false },
-      
       { id: 201, barcode: "201", name: "Queijo Mussarela Fatiado", price: 0.00, category: "Frios", variable: true },
       { id: 202, barcode: "202", name: "Presunto Cozido Especial", price: 0.00, category: "Frios", variable: true },
       { id: 203, barcode: "203", name: "Queijo de Coalho do Sertão", price: 0.00, category: "Frios", variable: true },
       { id: 204, barcode: "7891000100103", name: "Leite Integral Betânia 1L", price: 5.50, category: "Frios", variable: false },
       { id: 205, barcode: "7891000100202", name: "Manteiga com Sal 200g", price: 11.90, category: "Frios", variable: false },
-
       { id: 301, barcode: "7896004000012", name: "Café Santa Clara 250g", price: 9.80, category: "Mercearia", variable: false },
       { id: 302, barcode: "7891000200101", name: "Açúcar Cristal Alegre 1kg", price: 4.20, category: "Mercearia", variable: false },
       { id: 303, barcode: "7891000200200", name: "Arroz Branco Tio João 1kg", price: 6.50, category: "Mercearia", variable: false },
       { id: 304, barcode: "7891000200309", name: "Feijão Carioca Kicaldo 1kg", price: 7.90, category: "Mercearia", variable: false },
       { id: 305, barcode: "7891000200606", name: "Óleo de Soja Soya 900ml", price: 6.90, category: "Mercearia", variable: false },
       { id: 306, barcode: "7891000200705", name: "Macarrão Espaguete Fortaleza 500g", price: 4.50, category: "Mercearia", variable: false },
-
       { id: 401, barcode: "7890123456789", name: "Coca-Cola 2 Litros", price: 10.00, category: "Bebidas", variable: false },
       { id: 402, barcode: "7890123456790", name: "Guaraná Antarctica 2L", price: 8.50, category: "Bebidas", variable: false },
       { id: 403, barcode: "7890123456791", name: "Água Mineral 500ml", price: 2.50, category: "Bebidas", variable: false },
-
       { id: 501, barcode: "501", name: "Fatia de Bolo Caseiro", price: 0.00, category: "Doces", variable: true },
       { id: 502, barcode: "7898012345678", name: "Biscoito Recheado 130g", price: 3.20, category: "Doces", variable: false },
       { id: 503, barcode: "7898012345679", name: "Biscoito Cream Cracker 400g", price: 5.20, category: "Doces", variable: false },
-
       { id: 601, barcode: "7899012345601", name: "Detergente Líquido 500ml", price: 2.60, category: "Limpeza", variable: false }
     ];
 
-    function getProducts() {
+    function getLocalProducts() {
       const stored = localStorage.getItem('nonna_products_db_v4');
       if (stored) {
         try { return JSON.parse(stored); } catch(e) {}
@@ -732,27 +733,60 @@
       return defaultProducts;
     }
 
-    const SUPABASE_URL = localStorage.getItem('nonna_supabase_url') || 'https://smzeufyrlibrhwyyrofz.supabase.co';
-    const SUPABASE_ANON_KEY = localStorage.getItem('nonna_supabase_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtemV1ZnlybGlicmh3eXlyb2Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODM0NjEsImV4cCI6MjEwOTU1OTQ2MX0.yM1y6IazTmC5NzwcK0xlRzl8EdXWaiHat48lt1bLGa8';
-
-    let supabaseClient = null;
-    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
-      try {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      } catch (e) {
-        console.error("Erro ao conectar no Supabase:", e);
-      }
-    }
-
-    function saveProducts(prods) {
+    function saveLocalProducts(prods) {
       localStorage.setItem('nonna_products_db_v4', JSON.stringify(prods));
     }
 
-    let products = getProducts();
+    // ==========================================
+    // CONEXÃO COM O SUPABASE NA NUVEM
+    // ==========================================
+    const SUPABASE_URL = 'https://smzeufyrlibrhwyyrofz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtemV1ZnlybGlicmh3eXlyb2Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODM0NjEsImV4cCI6MjEwOTU1OTQ2MX0.yM1y6IazTmC5NzwcK0xlRzl8EdXWaiHat48lt1bLGa8';
+
+    let supabaseClient = null;
+    if (window.supabase) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Supabase conectado com sucesso!");
+      } catch (e) {
+        console.error("Erro ao inicializar Supabase:", e);
+      }
+    }
+
+    let products = getLocalProducts();
     let currentCart = [];
     let currentPaymentMethod = 'Dinheiro';
     let currentPixMachine = 'stone';
     let saleCounter = parseInt(localStorage.getItem('nonna_sale_counter') || '1');
+
+    // Sincroniza produtos do Supabase
+    async function syncProductsFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('produtos')
+          .select('*')
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+        if (data && data.length > 0) {
+          products = data.map(item => ({
+            id: Number(item.id),
+            barcode: String(item.barcode),
+            name: item.name,
+            price: parseFloat(item.price) || 0.00,
+            category: item.category || 'Padaria',
+            variable: Boolean(item.variable)
+          }));
+          saveLocalProducts(products);
+          renderProductsCatalog();
+          renderModalProductsTable();
+          console.log(`Catálogo sincronizado com a nuvem: ${products.length} itens.`);
+        }
+      } catch (err) {
+        console.warn("Modo offline: usando produtos do cache local.", err);
+      }
+    }
 
     const pixProfiles = {
       stone: { name: "Maquininha 1 (Stone / Ton)", key: "padarianonna@stone.com.br" },
@@ -762,13 +796,12 @@
 
     const scannerInput = document.getElementById('barcodeScannerInput');
     
-    // CORREÇÃO CRÍTICA DE FOCO: Não rouba o foco quando qualquer modal ou input está em uso
+    // Foco inteligente
     function keepFocus() {
       const modalConfigOpen = document.getElementById('configModal').classList.contains('flex');
       const modalClosingOpen = document.getElementById('closingModal').classList.contains('flex');
       const modalAuthOpen = !document.getElementById('authPasswordModal').classList.contains('hidden');
 
-      // Se qualquer modal estiver aberto, NUNCA puxe o foco para a pistola
       if (modalConfigOpen || modalClosingOpen || modalAuthOpen) {
         return;
       }
@@ -1086,7 +1119,7 @@
       calculateChange();
     }
 
-    function finalizeSaleAndPrint() {
+    async function finalizeSaleAndPrint() {
       if (currentCart.length === 0) return;
 
       const grandTotal = getGrandTotal();
@@ -1124,13 +1157,29 @@
         </tr>
       `).join('');
 
-      saveSaleRecord({
+      const saleRecord = {
         id: saleCounter,
         date: now.toISOString(),
         total: grandTotal,
         payment: currentPaymentMethod,
         items: [...currentCart]
-      });
+      };
+
+      saveSaleRecord(saleRecord);
+
+      // Sincroniza venda com Supabase
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('vendas').insert({
+            date: saleRecord.date,
+            total: saleRecord.total,
+            payment: saleRecord.payment,
+            items: saleRecord.items
+          });
+        } catch (e) {
+          console.warn("Falha ao registrar venda na nuvem:", e);
+        }
+      }
 
       saleCounter++;
       localStorage.setItem('nonna_sale_counter', saleCounter.toString());
@@ -1212,7 +1261,7 @@
       }
     }
 
-    function addSangria() {
+    async function addSangria() {
       const motivo = document.getElementById('sangriaMotivo').value.trim() || 'Retirada Diversa';
       const valor = parseFloat(document.getElementById('sangriaValor').value);
 
@@ -1222,8 +1271,17 @@
       }
 
       const sangrias = getTodaySangrias();
-      sangrias.push({ motivo, valor, date: new Date().toISOString() });
+      const newSangria = { motivo, valor, date: new Date().toISOString() };
+      sangrias.push(newSangria);
       localStorage.setItem('nonna_sangrias_today_v4', JSON.stringify(sangrias));
+
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('sangrias').insert(newSangria);
+        } catch (e) {
+          console.warn("Falha ao salvar sangria na nuvem:", e);
+        }
+      }
 
       document.getElementById('sangriaMotivo').value = '';
       document.getElementById('sangriaValor').value = '';
@@ -1266,7 +1324,7 @@
     }
 
     // ==========================================
-    // SISTEMA DE SENHA PERSONALIZADO (SEM ROUBO DE FOCO)
+    // SISTEMA DE SENHA PERSONALIZADO
     // ==========================================
     const ADMIN_PASSWORD = "nonna2026";
     let pendingAuthCallback = null;
@@ -1427,7 +1485,7 @@
       document.getElementById('newProdVariable').checked = item.variable;
 
       document.getElementById('formProductTitle').innerText = "Editar Produto / Alterar Preço";
-      document.getElementById('saveProdBtn').innerText = "Salvar Alterações";
+      document.getElementById('saveProdBtn').innerText = "Salvar Alterações no Banco";
       document.getElementById('saveProdBtn').className = "w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs shadow-sm transition";
       document.getElementById('cancelEditBtn').classList.remove('hidden');
 
@@ -1442,12 +1500,13 @@
       document.getElementById('newProdVariable').checked = false;
 
       document.getElementById('formProductTitle').innerText = "Cadastrar Novo Produto";
-      document.getElementById('saveProdBtn').innerText = "+ Salvar Produto";
+      document.getElementById('saveProdBtn').innerText = "+ Salvar Produto no Banco";
       document.getElementById('saveProdBtn').className = "w-full py-2.5 bg-[#1b5e3a] hover:bg-emerald-800 text-white font-black rounded-xl text-xs shadow-sm transition";
       document.getElementById('cancelEditBtn').classList.add('hidden');
     }
 
-    function handleSaveProduct(e) {
+    // Gravação direta no Supabase
+    async function handleSaveProduct(e) {
       e.preventDefault();
       const editId = document.getElementById('editingProductId').value;
       const barcode = document.getElementById('newProdBarcode').value.trim() || String(Date.now()).slice(-6);
@@ -1456,54 +1515,73 @@
       const category = document.getElementById('newProdCategory').value;
       const variable = document.getElementById('newProdVariable').checked;
 
+      const productPayload = {
+        id: editId ? parseInt(editId) : Date.now(),
+        barcode,
+        name,
+        price,
+        category,
+        variable
+      };
+
+      // 1. Salva na nuvem (Supabase)
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient
+            .from('produtos')
+            .upsert(productPayload);
+
+          if (error) throw error;
+        } catch (err) {
+          console.error("Erro ao sincronizar com Supabase:", err);
+          alert("Aviso: Houve um erro ao sincronizar com o banco online. Salvo localmente.");
+        }
+      }
+
+      // 2. Atualiza estado local
       if (editId) {
         const idx = products.findIndex(p => p.id == editId);
-        if (idx !== -1) {
-          products[idx] = { id: parseInt(editId), barcode, name, price, category, variable };
-        }
+        if (idx !== -1) products[idx] = productPayload;
         alert(`Produto "${name}" alterado com sucesso!`);
       } else {
-        products.unshift({
-          id: Date.now(),
-          barcode,
-          name,
-          price,
-          category,
-          variable
-        });
+        products.unshift(productPayload);
         alert(`Produto "${name}" cadastrado com sucesso!`);
       }
 
-      saveProducts(products);
+      saveLocalProducts(products);
       renderProductsCatalog();
       renderModalProductsTable();
       resetProductForm();
     }
 
-    function deleteProduct(id) {
+    // Exclusão direta no Supabase
+    async function deleteProduct(id) {
       const item = products.find(p => p.id === id);
-      if (item && confirm(`Deseja realmente excluir "${item.name}"?`)) {
-        products = products.filter(p => p.id !== id);
-        saveProducts(products);
-        renderProductsCatalog();
-        renderModalProductsTable();
+      if (!item || !confirm(`Deseja realmente excluir "${item.name}"?`)) return;
+
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient
+            .from('produtos')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+        } catch (err) {
+          console.error("Erro ao excluir do Supabase:", err);
+        }
       }
+
+      products = products.filter(p => p.id !== id);
+      saveLocalProducts(products);
+      renderProductsCatalog();
+      renderModalProductsTable();
     }
 
-    function saveSupabaseConfig() {
-      const url = document.getElementById('supabaseUrlInput').value.trim();
-      const key = document.getElementById('supabaseKeyInput').value.trim();
-      if (!url || !key) {
-        alert("Preencha a URL e a Anon Key do Supabase!");
-        return;
-      }
-      localStorage.setItem('nonna_supabase_url', url);
-      localStorage.setItem('nonna_supabase_key', key);
-      alert("Configurações do Supabase salvas com sucesso!");
-    }
-
+    // Inicialização
     renderProductsCatalog();
     renderCart();
+    syncProductsFromSupabase();
     setTimeout(keepFocus, 300);
   </script>
 
