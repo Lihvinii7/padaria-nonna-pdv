@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Padaria da Nonna | PDV & Frente de Caixa</title>
+  
+  <!-- Favicon para a aba do navegador -->
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+  <link rel="apple-touch-icon" href="logo.png">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link rel="icon" type="image/png" href="logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
   
   <style>
@@ -49,25 +53,29 @@
 </head>
 <body class="bg-[#fbf9f4] text-slate-800 min-h-screen flex flex-col antialiased">
 
- <!-- ======================================================== -->
+  <!-- ======================================================== -->
   <!-- TOPO: BARRA VERMELHA + BANNER DISCRETO (SEM CORTES)      -->
   <!-- ======================================================== -->
   <header class="w-full no-print shadow-xs border-b border-slate-200">
     
     <!-- 1. Barra Vermelha Superior Compacta -->
-    <div class="w-full bg-[#a81418] text-white px-4 sm:px-6 py-1.5 flex flex-wrap items-center justify-between gap-2 border-b border-[#820d11]">
-      <div class="flex items-center space-x-2.5">
-        <img 
-          src="logo.png" 
-          alt="Logo Nonna" 
-          class="w-8 h-8 rounded-full bg-white p-0.5 object-contain shadow-xs shrink-0"
-          onerror="this.style.display='none'"
-        >
+    <div class="w-full bg-[#a81418] text-white px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 border-b border-[#820d11]">
+      <div class="flex items-center space-x-3">
+        <!-- Logo com proteção contra sumiço -->
+        <div class="w-10 h-10 rounded-full bg-white p-0.5 shadow-sm shrink-0 border-2 border-amber-300 flex items-center justify-center overflow-hidden">
+          <img 
+            src="logo.png" 
+            alt="Logo Nonna" 
+            id="headerLogoImg"
+            class="w-full h-full object-contain"
+            onerror="if(!this.dataset.triedJpg){ this.dataset.triedJpg='1'; this.src='logo.jpg'; } else { this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-wheat-awn text-amber-600 text-lg\'></i>'; }"
+          >
+        </div>
         <div>
           <h1 class="text-base sm:text-lg font-black leading-none text-white tracking-tight">
             Padaria da Nonna
           </h1>
-          <p class="text-[9px] font-bold text-amber-200 uppercase tracking-widest mt-0.5">
+          <p class="text-[9px] font-bold text-amber-200 uppercase tracking-widest mt-1">
             PÃES &bull; BOLOS &bull; SALGADOS &bull; BOLACHAS &bull; PIZZAS &bull; FRIOS
           </p>
         </div>
@@ -75,14 +83,14 @@
 
       <!-- Botões de Ação do Caixa -->
       <div class="flex items-center space-x-2">
-        <div class="hidden sm:flex items-center bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 text-[11px]">
+        <div class="hidden sm:flex items-center bg-black/25 px-2.5 py-1.5 rounded-lg border border-white/10 text-[11px]">
           <span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
           <span class="font-bold text-white">Caixa Livre &bull; Balcão 01</span>
         </div>
 
         <button 
           onclick="openConfigModal()" 
-          class="px-3 py-1 bg-[#820d11] hover:bg-[#6b0a0e] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-white/10 shadow-xs"
+          class="px-3.5 py-1.5 bg-[#820d11] hover:bg-[#6b0a0e] text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-white/15 shadow-xs"
         >
           <i class="fa-solid fa-boxes-stacked text-[11px]"></i>
           <span>Produtos / Banco</span>
@@ -90,7 +98,7 @@
 
         <button 
           onclick="openClosingModal()" 
-          class="px-3 py-1 bg-[#820d11] hover:bg-[#6b0a0e] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-white/10 shadow-xs"
+          class="px-3.5 py-1.5 bg-[#820d11] hover:bg-[#6b0a0e] text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-white/15 shadow-xs"
         >
           <i class="fa-solid fa-clock-rotate-left text-[11px]"></i>
           <span>Histórico</span>
@@ -98,7 +106,7 @@
       </div>
     </div>
 
- <!-- Banner Esticado de Lateral a Lateral (Altura Fina & Zero Cortes) -->
+    <!-- 2. Banner Esticado de Lateral a Lateral (Altura Fina & Zero Cortes) -->
     <div class="w-full bg-[#fbf9f4] overflow-hidden flex items-center justify-center border-b-2 border-emerald-700">
       <img 
         src="banner.png" 
@@ -364,7 +372,7 @@
           <!-- BOTÃO FECHAR VENDA NA ELGIN i9 -->
           <button 
             onclick="finalizeSaleAndPrint()" 
-            id="finishSaleBtn"
+            id="finishSaleBtn" 
             disabled
             class="w-full py-3.5 bg-[#c5161d] hover:bg-[#a51218] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-base shadow-lg shadow-[#c5161d]/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
           >
@@ -650,7 +658,88 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT: MOTOR COMPLETO DA PADARIA DA NONNA -->
+  <!-- ======================================================== -->
+  <!-- MODAL DE AUTENTICAÇÃO ADMINISTRATIVA (GRANDE E ELEGANTE)  -->
+  <!-- ======================================================== -->
+  <div id="authPasswordModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all p-7 sm:p-9 text-center">
+      
+      <!-- Logo Oficial com Borda Dourada e Sombra Macia -->
+      <div class="flex justify-center mb-5">
+        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white p-2.5 shadow-xl border-4 border-amber-300 flex items-center justify-center overflow-hidden">
+          <img 
+            src="logo.png" 
+            alt="Logo Padaria da Nonna" 
+            class="w-full h-full object-contain"
+            onerror="if(!this.dataset.triedJpg){ this.dataset.triedJpg='1'; this.src='logo.jpg'; } else { this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-wheat-awn text-amber-600 text-4xl\'></i>'; }"
+          >
+        </div>
+      </div>
+
+      <!-- Títulos Informativos de Fácil Leitura -->
+      <h3 class="text-2xl sm:text-3xl font-black text-[#a81418] tracking-tight">
+        Acesso Administrativo
+      </h3>
+      <p class="text-xs sm:text-sm font-bold text-amber-700 uppercase tracking-widest mt-1">
+        Padaria da Nonna &bull; Modo Seguro
+      </p>
+      
+      <p id="authModalDescription" class="text-sm text-slate-600 mt-3 font-medium px-2">
+        Digite a senha de administrador para acessar o cadastro de produtos e chaves da nuvem.
+      </p>
+
+      <!-- Campo de Senha Amplo -->
+      <div class="mt-6 text-left">
+        <label for="adminAuthInput" class="block text-xs font-black text-slate-700 mb-2 uppercase tracking-wide">
+          Senha de Administrador:
+        </label>
+        
+        <div class="relative">
+          <input 
+            type="password" 
+            id="adminAuthInput" 
+            placeholder="Digite a senha aqui..." 
+            class="w-full pl-5 pr-14 py-4 bg-slate-50 border-2 border-slate-300 focus:border-[#a81418] focus:bg-white rounded-2xl text-base sm:text-lg font-bold outline-none transition text-slate-900 shadow-inner"
+            onkeydown="if(event.key === 'Enter') confirmAuthPassword()"
+          >
+          <button 
+            type="button" 
+            onclick="togglePasswordVisibility()" 
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-2 text-base transition"
+            title="Mostrar/Ocultar Senha"
+          >
+            <i class="fa-solid fa-eye" id="togglePassIcon"></i>
+          </button>
+        </div>
+
+        <p id="authErrorMessage" class="text-xs sm:text-sm font-bold text-rose-600 mt-2.5 hidden text-center bg-rose-50 py-1.5 rounded-xl border border-rose-200">
+          <i class="fa-solid fa-circle-exclamation mr-1"></i> Senha incorreta! Tente novamente.
+        </p>
+      </div>
+
+      <!-- Botões de Ação Grandes e Espaçados -->
+      <div class="grid grid-cols-2 gap-3.5 mt-8">
+        <button 
+          onclick="closeAuthPasswordModal()" 
+          class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold rounded-2xl text-sm transition"
+        >
+          Cancelar
+        </button>
+        <button 
+          onclick="confirmAuthPassword()" 
+          class="w-full py-3.5 bg-[#a81418] hover:bg-[#820d11] text-white font-extrabold rounded-2xl text-sm shadow-lg shadow-[#a81418]/25 transition flex items-center justify-center gap-2"
+        >
+          <i class="fa-solid fa-lock-open text-xs"></i>
+          <span>Entrar</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT: MOTOR COMPLETO DA PADARIA DA NONNA           -->
+  <!-- ======================================================== -->
   <script>
     const defaultProducts = [
       { id: 101, barcode: "101", name: "Pão Francês Tradicional", price: 0.00, category: "Padaria", variable: true },
@@ -693,8 +782,8 @@
     // ==========================================
     // CONFIGURAÇÃO DIRETA DO SUPABASE
     // ==========================================
-    const SUPABASE_URL = localStorage.getItem('supabase_url') || 'https://smzeufyrlibrhwyyrofz.supabase.co';
-    const SUPABASE_ANON_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtemV1ZnlybGlicmh3eXlyb2Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODM0NjEsImV4cCI6MjEwOTU1OTQ2MX0.yM1y6IazTmC5NzwcK0xlRzl8EdXWaiHat48lt1bLGa8';
+    const SUPABASE_URL = localStorage.getItem('nonna_supabase_url') || 'https://smzeufyrlibrhwyyrofz.supabase.co';
+    const SUPABASE_ANON_KEY = localStorage.getItem('nonna_supabase_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtemV1ZnlybGlicmh3eXlyb2Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODM0NjEsImV4cCI6MjEwOTU1OTQ2MX0.yM1y6IazTmC5NzwcK0xlRzl8EdXWaiHat48lt1bLGa8';
 
     let supabaseClient = null;
     if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
@@ -704,7 +793,7 @@
       } catch (e) {
         console.error("Erro ao conectar no Supabase:", e);
       }
-    } 
+    }
 
     function saveProducts(prods) {
       localStorage.setItem('nonna_products_db_v4', JSON.stringify(prods));
@@ -724,14 +813,26 @@
 
     const scannerInput = document.getElementById('barcodeScannerInput');
     
+    // Foco automático inteligente (sem travar a digitação dos modais de senha e produtos)
     function keepFocus() {
-      const activeModal = document.getElementById('configModal').classList.contains('flex') || document.getElementById('closingModal').classList.contains('flex');
-      const typingManualPrice = document.activeElement === document.getElementById('quickManualPriceInput');
-      const typingCash = document.activeElement === document.getElementById('cashReceivedInput');
-      const typingSangria = document.activeElement === document.getElementById('sangriaMotivo') || document.activeElement === document.getElementById('sangriaValor');
-      const typingForm = document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement.closest('#configModal');
+      const modalConfigOpen = document.getElementById('configModal').classList.contains('flex');
+      const modalClosingOpen = document.getElementById('closingModal').classList.contains('flex');
+      const modalAuthOpen = !document.getElementById('authPasswordModal').classList.contains('hidden');
 
-      if (!activeModal && !typingManualPrice && !typingCash && !typingSangria && !typingForm && document.activeElement !== scannerInput) {
+      const isTypingInSpecialInput = [
+        'quickManualPriceInput',
+        'cashReceivedInput',
+        'sangriaMotivo',
+        'sangriaValor',
+        'adminAuthInput',
+        'newProdBarcode',
+        'newProdPrice',
+        'newProdName',
+        'supabaseUrlInput',
+        'supabaseKeyInput'
+      ].includes(document.activeElement?.id);
+
+      if (!modalConfigOpen && !modalClosingOpen && !modalAuthOpen && !isTypingInSpecialInput && document.activeElement !== scannerInput) {
         scannerInput.focus();
       }
     }
@@ -939,7 +1040,7 @@
           <div class="text-center py-12 text-slate-400 font-sans">
             <i class="fa-solid fa-cart-shopping text-3xl mb-2 text-slate-300"></i>
             <p class="font-bold text-xs">Caixa livre</p>
-            <p class="text-[10px] mt-0.5">Aponte a pistola ou selecione o produto</p>
+            <p class="text-[10px] mt-0.5">Aponte a pistola ou selecione o item</p>
           </div>
         `;
         totalDisplay.innerText = "R$ 0,00";
@@ -969,7 +1070,7 @@
       finishBtn.disabled = false;
     }
 
-    // 5. TROCO & PIX MULTI-MAQUININHA
+    // 5. FORMAS DE PAGAMENTO & TROCO
     function selectPayment(method) {
       currentPaymentMethod = method;
       document.querySelectorAll('.pay-btn').forEach(b => {
@@ -1229,31 +1330,106 @@
       document.getElementById('printableClosingReceipt').classList.remove('active-print');
     }
 
-   function clearDaySales() {
-      // 1. Trava de segurança por senha de administrador
-      if (sessionStorage.getItem('nonna_admin_auth') !== 'true') {
-        const pass = prompt("Área Restrita!\n\nDigite a senha de administrador para zerar o caixa do dia:");
-        if (pass === null) return; // Clicou em cancelar
-        if (pass !== ADMIN_PASSWORD) {
-          alert("Acesso negado: Senha incorreta! Os registros foram mantidos.");
-          return;
-        }
-        sessionStorage.setItem('nonna_admin_auth', 'true');
+    // 8. AUTENTICAÇÃO COM MODAL VISUAL E ELEGANTE
+    const ADMIN_PASSWORD = "nonna2026";
+    let pendingAuthCallback = null;
+
+    function requestAdminAuth(descriptionText, onSuccessCallback) {
+      if (sessionStorage.getItem('nonna_admin_auth') === 'true') {
+        if (typeof onSuccessCallback === 'function') onSuccessCallback();
+        return;
       }
 
-      // 2. Confirmação e limpeza dos dados
-      if (confirm("Deseja zerar os registros de vendas e sangrias de hoje?")) {
-        localStorage.removeItem('nonna_sangrias_today_v4');
-        const history = JSON.parse(localStorage.getItem('nonna_sales_history_v4') || '[]');
-        const todayStr = new Date().toISOString().split('T')[0];
-        const remaining = history.filter(h => !h.date || !h.date.startsWith(todayStr));
-        localStorage.setItem('nonna_sales_history_v4', JSON.stringify(remaining));
-        updateClosingModalData();
-        alert("Caixa do dia zerado com sucesso!");
+      pendingAuthCallback = onSuccessCallback;
+      const modal = document.getElementById('authPasswordModal');
+      const input = document.getElementById('adminAuthInput');
+      const errorMsg = document.getElementById('authErrorMessage');
+      const descEl = document.getElementById('authModalDescription');
+
+      if (descEl && descriptionText) {
+        descEl.textContent = descriptionText;
+      }
+
+      if (errorMsg) errorMsg.classList.add('hidden');
+      if (input) input.value = '';
+      if (modal) modal.classList.remove('hidden');
+
+      setTimeout(() => {
+        if (input) input.focus();
+      }, 100);
+    }
+
+    function closeAuthPasswordModal() {
+      const modal = document.getElementById('authPasswordModal');
+      if (modal) modal.classList.add('hidden');
+      pendingAuthCallback = null;
+      keepFocus();
+    }
+
+    function confirmAuthPassword() {
+      const input = document.getElementById('adminAuthInput');
+      const errorMsg = document.getElementById('authErrorMessage');
+      const enteredValue = input ? input.value.trim() : '';
+
+      if (enteredValue === ADMIN_PASSWORD) {
+        sessionStorage.setItem('nonna_admin_auth', 'true');
+        closeAuthPasswordModal();
+        if (typeof pendingAuthCallback === 'function') {
+          pendingAuthCallback();
+        }
+      } else {
+        if (errorMsg) errorMsg.classList.remove('hidden');
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
       }
     }
 
-    // 8. CATÁLOGO VISUAL & CRUD COMPLETO (ADICIONAR, EDITAR PREÇO, EXCLUIR)
+    function togglePasswordVisibility() {
+      const input = document.getElementById('adminAuthInput');
+      const icon = document.getElementById('togglePassIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    }
+
+    function openConfigModal() {
+      requestAdminAuth("Digite a senha de administrador para gerenciar produtos e chaves do Supabase:", () => {
+        const modal = document.getElementById('configModal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+        renderModalProductsTable();
+      });
+    }
+
+    function closeConfigModal() {
+      document.getElementById('configModal').classList.remove('flex');
+      document.getElementById('configModal').classList.add('hidden');
+      keepFocus();
+    }
+
+    function clearDaySales() {
+      requestAdminAuth("Digite a senha de administrador para zerar o caixa e as vendas do dia:", () => {
+        if (confirm("Deseja realmente zerar todos os registros de vendas e sangrias de hoje?")) {
+          localStorage.removeItem('nonna_sangrias_today_v4');
+          const history = JSON.parse(localStorage.getItem('nonna_sales_history_v4') || '[]');
+          const todayStr = new Date().toISOString().split('T')[0];
+          const remaining = history.filter(h => !h.date || !h.date.startsWith(todayStr));
+          localStorage.setItem('nonna_sales_history_v4', JSON.stringify(remaining));
+          updateClosingModalData();
+          alert("Caixa do dia zerado com sucesso!");
+        }
+      });
+    }
+
+    // 9. CATÁLOGO VISUAL & CRUD COMPLETO
     function renderProductsCatalog() {
       const grid = document.getElementById('productsQuickGrid');
       const cat = document.getElementById('categoryFilter').value;
@@ -1335,97 +1511,6 @@
       document.getElementById('cancelEditBtn').classList.add('hidden');
     }
 
-   // Senha padrão de administrador (mude para a senha que preferir)
-    const ADMIN_PASSWORD = "nonna2026";
-    let pendingAuthCallback = null;
-
-    // Função universal para abrir a janela estilizada de senha
-    function requestAdminAuth(descriptionText, onSuccessCallback) {
-      if (sessionStorage.getItem('nonna_admin_auth') === 'true') {
-        if (typeof onSuccessCallback === 'function') onSuccessCallback();
-        return;
-      }
-
-      pendingAuthCallback = onSuccessCallback;
-      const modal = document.getElementById('authPasswordModal');
-      const input = document.getElementById('adminAuthInput');
-      const errorMsg = document.getElementById('authErrorMessage');
-      const descEl = document.getElementById('authModalDescription');
-
-      if (descEl && descriptionText) {
-        descEl.textContent = descriptionText;
-      }
-
-      if (errorMsg) errorMsg.classList.add('hidden');
-      if (input) input.value = '';
-      if (modal) modal.classList.remove('hidden');
-
-      setTimeout(() => {
-        if (input) input.focus();
-      }, 100);
-    }
-
-    // Fechar a janela de senha
-    function closeAuthPasswordModal() {
-      const modal = document.getElementById('authPasswordModal');
-      if (modal) modal.classList.add('hidden');
-      pendingAuthCallback = null;
-    }
-
-    // Validar a senha digitada
-    function confirmAuthPassword() {
-      const input = document.getElementById('adminAuthInput');
-      const errorMsg = document.getElementById('authErrorMessage');
-      const enteredValue = input ? input.value : '';
-
-      if (enteredValue === ADMIN_PASSWORD) {
-        sessionStorage.setItem('nonna_admin_auth', 'true');
-        closeAuthPasswordModal();
-        if (typeof pendingAuthCallback === 'function') {
-          pendingAuthCallback();
-        }
-      } else {
-        if (errorMsg) {
-          errorMsg.textContent = "Senha incorreta! Acesso restrito a administradores.";
-          errorMsg.classList.remove('hidden');
-        }
-        if (input) {
-          input.value = '';
-          input.focus();
-        }
-      }
-    }
-
-    // Substitua a função do botão Produtos / Banco
-    function openConfigModal() {
-      requestAdminAuth("Digite a senha para acessar o cadastro de produtos e chaves do Supabase:", () => {
-        const modal = document.getElementById('configModal');
-        if (modal) modal.classList.remove('hidden');
-        if (typeof renderProductListAdmin === 'function') renderProductListAdmin();
-      });
-    }
-
-    // Substitua a função de limpar vendas do dia
-    function clearDaySales() {
-      requestAdminAuth("Digite a senha para zerar os registros de vendas e caixa de hoje:", () => {
-        if (confirm("Deseja zerar os registros de vendas e sangrias de hoje?")) {
-          localStorage.removeItem('nonna_sangrias_today_v4');
-          const history = JSON.parse(localStorage.getItem('nonna_sales_history_v4') || '[]');
-          const todayStr = new Date().toISOString().split('T')[0];
-          const remaining = history.filter(h => !h.date || !h.date.startsWith(todayStr));
-          localStorage.setItem('nonna_sales_history_v4', JSON.stringify(remaining));
-          if (typeof updateClosingModalData === 'function') updateClosingModalData();
-          alert("Caixa do dia zerado com sucesso!");
-        }
-      });
-    }
-
-    function closeConfigModal() {
-      document.getElementById('configModal').classList.remove('flex');
-      document.getElementById('configModal').classList.add('hidden');
-      keepFocus();
-    }
-
     function handleSaveProduct(e) {
       e.preventDefault();
       const editId = document.getElementById('editingProductId').value;
@@ -1436,14 +1521,12 @@
       const variable = document.getElementById('newProdVariable').checked;
 
       if (editId) {
-        // Alteração de produto existente
         const idx = products.findIndex(p => p.id == editId);
         if (idx !== -1) {
           products[idx] = { id: parseInt(editId), barcode, name, price, category, variable };
         }
         alert(`Produto "${name}" alterado com sucesso!`);
       } else {
-        // Novo produto
         products.unshift({
           id: Date.now(),
           barcode,
@@ -1483,80 +1566,11 @@
       alert("Configurações do Supabase salvas com sucesso!");
     }
 
-    // Inicialização
+    // Inicialização do sistema
     renderProductsCatalog();
     renderCart();
     setTimeout(keepFocus, 300);
   </script>
-
-  <!-- ======================================================== -->
-  <!-- MODAL DE AUTENTICAÇÃO ADMINISTRATIVA (PERSONALIZADO)     -->
-  <!-- ======================================================== -->
-  <div id="authPasswordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all p-6 text-center">
-      
-      <!-- Logo Oficial da Padaria da Nonna -->
-      <div class="flex justify-center mb-4">
-        <div class="w-24 h-24 rounded-full bg-white p-2 shadow-lg border-2 border-amber-300 flex items-center justify-center">
-          <img 
-            src="logo.png" 
-            alt="Logo Padaria da Nonna" 
-            class="w-full h-full object-contain"
-            onerror="this.src='logo.jpg'"
-          >
-        </div>
-      </div>
-
-      <!-- Títulos Informativos -->
-      <h3 class="text-2xl font-black text-[#a81418] tracking-tight">
-        Acesso Administrativo
-      </h3>
-      <p class="text-xs font-bold text-amber-700 uppercase tracking-widest mt-1">
-        Padaria da Nonna &bull; Modo Seguro
-      </p>
-      <p id="authModalDescription" class="text-sm text-slate-500 mt-2">
-        Digite a senha de administrador para gerenciar produtos e configurações do sistema.
-      </p>
-
-      <!-- Campo de Senha com Feedback -->
-      <div class="mt-5 text-left">
-        <label for="adminAuthInput" class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
-          Senha de Acesso:
-        </label>
-        <div class="relative">
-          <input 
-            type="password" 
-            id="adminAuthInput" 
-            placeholder="Digite a senha..." 
-            class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-[#a81418] focus:bg-white rounded-2xl text-base font-semibold outline-none transition text-slate-800"
-            onkeydown="if(event.key === 'Enter') confirmAuthPassword()"
-          >
-        </div>
-        <p id="authErrorMessage" class="text-xs font-bold text-red-600 mt-2 hidden text-center">
-          Senha incorreta! Tente novamente.
-        </p>
-      </div>
-
-      <!-- Botões de Ação -->
-      <div class="grid grid-cols-2 gap-3 mt-6">
-        <button 
-          onclick="closeAuthPasswordModal()" 
-          class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-sm transition"
-        >
-          Cancelar
-        </button>
-        <button 
-          onclick="confirmAuthPassword()" 
-          class="w-full py-3 bg-[#a81418] hover:bg-[#820d11] text-white font-bold rounded-2xl text-sm shadow-md transition flex items-center justify-center gap-2"
-        >
-          <i class="fa-solid fa-lock-open text-xs"></i>
-          Acessar
-        </button>
-      </div>
-
-    </div>
-  </div>
-
 
 </body>
 </html>
