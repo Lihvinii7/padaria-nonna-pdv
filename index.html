@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Padaria da Nonna | PDV & Frente de Caixa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono-receipt { font-family: 'Space Mono', monospace; }
+
+    /* FORMATAÇÃO EXATA PARA ELGIN i9 (BOBINA 80mm / ÁREA DE IMPRESSÃO 72mm) */
+    #printableReceipt, #printableClosingReceipt {
+      display: none;
+    }
+    @media print {
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
+      body {
+        background: #fff !important;
+        color: #000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      #printableReceipt.active-print, #printableClosingReceipt.active-print {
+        display: block !important;
+        position: relative !important;
+        width: 72mm !important;
+        max-width: 72mm !important;
+        margin: 0 auto !important;
+        padding: 3mm 2mm !important;
+        font-size: 10px !important;
+        line-height: 1.25 !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#fbf9f4] text-slate-800 min-h-screen flex flex-col antialiased">
+
+ <!-- ======================================================== -->
+  <!-- TOPO: BARRA VERMELHA + BANNER DISCRETO (SEM CORTES)      -->
+  <!-- ======================================================== -->
+  <header class="w-full no-print shadow-xs border-b border-slate-200">
+    
+    <!-- 1. Barra Vermelha Superior Compacta -->
+    <div class="w-full bg-[#a81418] text-white px-4 sm:px-6 py-1.5 flex flex-wrap items-center justify-between gap-2 border-b border-[#820d11]">
+      <div class="flex items-center space-x-2.5">
+        <img 
+          src="logo.png" 
+          alt="Logo Nonna" 
+          class="w-8 h-8 rounded-full bg-white p-0.5 object-contain shadow-xs shrink-0"
+          onerror="this.style.display='none'"
+        >
+        <div>
+          <h1 class="text-base sm:text-lg font-black leading-none text-white tracking-tight">
+            Padaria da Nonna
+          </h1>
+          <p class="text-[9px] font-bold text-amber-200 uppercase tracking-widest mt-0.5">
+            PÃES &bull; BOLOS &bull; SALGADOS &bull; BOLACHAS &bull; PIZZAS &bull; FRIOS
+          </p>
+        </div>
+      </div>
+
+      <!-- Botões de Ação do Caixa -->
+      <div class="flex items-center space-x-2">
+        <div class="hidden sm:flex items-center bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+          <span class="font-bold text-white">Caixa Livre &bull; Balcão 01</span>
+        </div>
+
+        <button 
+          onclick="openConfigModal()" 
+          class="px-3 py-1 bg-[#820d11] hover:bg-[#6b0a0e] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-white/10 shadow-xs"
+        >
+          <i class="fa-solid fa-boxes-stacked text-[11px]"></i>
+          <span>Produtos / Banco</span>
+        </button>
+
+        <button 
+          onclick="openClosingModal()" 
+          class="px-3 py-1 bg-[#820d11] hover:bg-[#6b0a0e] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-white/10 shadow-xs"
+        >
+          <i class="fa-solid fa-clock-rotate-left text-[11px]"></i>
+          <span>Histórico</span>
+        </button>
+      </div>
+    </div>
+
+ <!-- Banner Esticado de Lateral a Lateral (Altura Fina & Zero Cortes) -->
+    <div class="w-full bg-[#fbf9f4] overflow-hidden flex items-center justify-center border-b-2 border-emerald-700">
+      <img 
+        src="banner.png" 
+        alt="Padaria da Nonna Banner" 
+        id="topBannerImg"
+        class="w-full h-28 sm:h-32 md:h-36 block"
+        style="object-fit: fill;"
+        onerror="if (this.src.endsWith('.png')) { this.src = 'banner.jpg'; } else { this.style.opacity = '0.5'; }"
+      >
+    </div>
+
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- CORPO PRINCIPAL DO FRENTE DE CAIXA                       -->
+  <!-- ======================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 no-print">
+
+    <!-- LADO ESQUERDO: PISTOLA + VALOR NA FRENTE + CATÁLOGO COMPLETO (7 Colunas) -->
+    <div class="lg:col-span-7 flex flex-col space-y-4">
+      
+      <!-- ENTRADA DA PISTOLA & PESQUISA POR INICIAIS (AUTOCOMPLETE) -->
+      <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-amber-100/80 space-y-3">
+        <div class="flex items-center justify-between">
+          <label class="block text-xs font-black uppercase text-slate-500 tracking-wider">
+            <i class="fa-solid fa-barcode mr-1 text-[#c5161d]"></i> Bipar Código ou Digitar Iniciais (Ex: "pa", "ca", "le")
+          </label>
+          <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Leitor Ativo
+          </span>
+        </div>
+        
+        <div class="relative">
+          <input 
+            type="text" 
+            id="barcodeScannerInput" 
+            autocomplete="off"
+            placeholder="Aponte a pistola de código de barras ou digite o nome..."
+            class="w-full pl-12 pr-28 py-3.5 bg-slate-50 border-2 border-slate-200 focus:border-[#c5161d] focus:bg-white rounded-2xl text-sm sm:text-base font-bold text-slate-900 transition outline-none shadow-inner"
+            onkeydown="handleScannerKey(event)"
+            oninput="handleLiveSearch(this.value)"
+          >
+          <div class="absolute left-4 top-4 text-slate-400 text-lg">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <button 
+            onclick="processCurrentInput()" 
+            class="absolute right-2 top-2 bottom-2 px-4 bg-[#c5161d] hover:bg-[#a51218] text-white text-xs font-black rounded-xl transition flex items-center gap-1.5 shadow-sm"
+          >
+            <span>Lançar</span>
+            <kbd class="text-[9px] bg-white/20 px-1 py-0.5 rounded font-mono">ENTER</kbd>
+          </button>
+        </div>
+
+        <div id="autocompleteDropdown" class="hidden bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden divide-y divide-slate-100 mt-1 max-h-60 overflow-y-auto"></div>
+      </div>
+
+      <!-- LANÇAMENTO DE VALOR MANUAL NA FRENTE DA TELA (GRANDE E DESTACADO) -->
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3">
+        <div class="flex items-center justify-between pb-1 border-b border-amber-200">
+          <h2 class="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-hand-holding-dollar text-amber-600 text-sm"></i>
+            Balcão de Pães & Frios (Digitar Valor da Balança)
+          </h2>
+          <span class="text-[10px] font-extrabold text-amber-800 bg-amber-200/60 px-2 py-0.5 rounded-lg">Visor Rápido</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+          <div class="sm:col-span-5">
+            <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Item Selecionado</label>
+            <select id="quickManualItemSelect" class="w-full px-3 py-2.5 bg-white border-2 border-amber-200 rounded-xl text-xs font-black text-slate-800 outline-none focus:border-[#c5161d]">
+              <option value="Pão Francês Tradicional">🥖 Pão Francês Tradicional</option>
+              <option value="Queijo Mussarela Fatiado">🧀 Queijo Mussarela Fatiado</option>
+              <option value="Presunto Cozido Especial">🥓 Presunto Cozido Especial</option>
+              <option value="Queijo de Coalho do Sertão">🧀 Queijo de Coalho</option>
+              <option value="Pão Doce de Creme">🥐 Pão Doce de Creme</option>
+              <option value="Fatia de Bolo Caseiro">🍰 Bolo Caseiro</option>
+              <option value="Item Avulso / Padaria">🏷️ Outro Item do Balcão</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-4">
+            <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Valor na Etiqueta (R$)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 font-bold text-slate-400 text-xs">R$</span>
+              <input 
+                type="text" 
+                id="quickManualPriceInput" 
+                placeholder="0,00" 
+                class="w-full pl-9 pr-3 py-2 bg-white border-2 border-amber-200 focus:border-[#c5161d] rounded-xl text-base font-black text-slate-900 outline-none"
+                onkeydown="if(event.key==='Enter') addQuickManualItem()"
+              >
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <button 
+              onclick="addQuickManualItem()" 
+              class="w-full py-2.5 bg-[#1b5e3a] hover:bg-emerald-800 text-white font-black rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
+            >
+              <i class="fa-solid fa-plus"></i>
+              <span>Adicionar</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1 flex-wrap">
+          <span class="text-[10px] font-bold text-amber-800">Pão direto:</span>
+          <button onclick="setQuickBreadValue(2.00)" class="px-2.5 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded-lg text-xs font-black text-amber-900 transition">+ R$ 2,00</button>
+          <button onclick="setQuickBreadValue(3.00)" class="px-2.5 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded-lg text-xs font-black text-amber-900 transition">+ R$ 3,00</button>
+          <button onclick="setQuickBreadValue(5.00)" class="px-2.5 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded-lg text-xs font-black text-amber-900 transition">+ R$ 5,00</button>
+          <button onclick="setQuickBreadValue(10.00)" class="px-2.5 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded-lg text-xs font-black text-amber-900 transition">+ R$ 10,00</button>
+        </div>
+      </div>
+
+      <!-- CATÁLOGO DE PRODUTOS VARIADOS -->
+      <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-amber-100/80 flex-1 flex flex-col">
+        <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 mb-3 gap-2">
+          <h2 class="text-xs font-black uppercase text-slate-600 tracking-wider">
+            <i class="fa-solid fa-boxes-stacked text-[#c5161d] mr-1"></i> Catálogo de Mercearia & Prateleira
+          </h2>
+          <div class="flex items-center gap-1.5 text-xs">
+            <select id="categoryFilter" onchange="renderProductsCatalog()" class="px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none">
+              <option value="all">Todas as Categorias</option>
+              <option value="Padaria">Padaria</option>
+              <option value="Frios">Frios & Laticínios</option>
+              <option value="Mercearia">Mercearia</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Doces">Doces & Biscoitos</option>
+              <option value="Limpeza">Limpeza</option>
+            </select>
+            <span id="registeredProductsCount" class="text-[11px] font-bold text-slate-400">0 itens</span>
+          </div>
+        </div>
+
+        <div id="productsQuickGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 overflow-y-auto max-h-60 p-1"></div>
+      </div>
+
+    </div>
+
+    <!-- LADO DIREITO: CUPOM + MÓDULO PIX MULTI-MAQUININHA + TROCO (5 Colunas) -->
+    <div class="lg:col-span-5 flex flex-col space-y-4">
+      
+      <div class="bg-white rounded-3xl p-5 shadow-md border-2 border-slate-200 flex flex-col justify-between min-h-[600px]">
+        
+        <div>
+          <!-- Cabeçalho do Cupom -->
+          <div class="pb-3 border-b-2 border-dashed border-slate-200 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-xl bg-[#c5161d] text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                <i class="fa-solid fa-receipt"></i>
+              </div>
+              <div>
+                <h3 class="font-black text-slate-900 text-sm leading-tight">Venda Atual</h3>
+                <p class="text-[10px] text-slate-400">Padaria da Nonna</p>
+              </div>
+            </div>
+            <button onclick="clearCurrentCart()" class="text-xs font-bold text-rose-600 hover:text-rose-800 transition">
+              Cancelar
+            </button>
+          </div>
+
+          <!-- Lista de Itens -->
+          <div class="overflow-y-auto max-h-48 mt-3 divide-y divide-slate-100 font-mono-receipt text-xs" id="cartItemsContainer">
+            <div class="text-center py-12 text-slate-400 font-sans">
+              <i class="fa-solid fa-cart-shopping text-3xl mb-2 text-slate-300"></i>
+              <p class="font-bold text-xs">Caixa livre</p>
+              <p class="text-[10px] mt-0.5">Aponte a pistola ou selecione o item</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOTALIZADOR, MÚLTIPLAS MAQUININHAS PIX, TROCO & FINALIZAR -->
+        <div class="pt-4 border-t-2 border-slate-200 space-y-3">
+          
+          <!-- TOTAL A PAGAR -->
+          <div class="bg-slate-900 text-white p-3.5 rounded-2xl flex items-center justify-between shadow-sm">
+            <div>
+              <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">TOTAL DA COMPRA</span>
+              <p id="cartTotalDisplay" class="text-2xl sm:text-3xl font-black text-emerald-400 font-mono-receipt">R$ 0,00</p>
+            </div>
+            <span class="text-xs font-bold text-slate-400" id="cartItemsCountDisplay">0 itens</span>
+          </div>
+
+          <!-- FORMAS DE PAGAMENTO -->
+          <div class="grid grid-cols-4 gap-1.5">
+            <button onclick="selectPayment('Dinheiro')" id="payBtnDinheiro" class="pay-btn py-2 rounded-xl text-xs font-black border border-slate-200 bg-[#1b5e3a] text-white transition text-center">
+              Dinheiro
+            </button>
+            <button onclick="selectPayment('PIX')" id="payBtnPIX" class="pay-btn py-2 rounded-xl text-xs font-black border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+              PIX
+            </button>
+            <button onclick="selectPayment('Débito')" id="payBtnDebito" class="pay-btn py-2 rounded-xl text-xs font-black border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+              Débito
+            </button>
+            <button onclick="selectPayment('Crédito')" id="payBtnCredito" class="pay-btn py-2 rounded-xl text-xs font-black border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center">
+              Crédito
+            </button>
+          </div>
+
+          <!-- CALCULADORA DE TROCO (QUANDO FOR DINHEIRO) -->
+          <div id="cashChangeBox" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black uppercase text-emerald-950 flex items-center gap-1">
+                <i class="fa-solid fa-coins text-emerald-600"></i> Troco em Dinheiro
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-black uppercase text-slate-500 mb-0.5">Recebido (R$)</label>
+                <input 
+                  type="text" 
+                  id="cashReceivedInput" 
+                  placeholder="Ex: 50,00" 
+                  class="w-full px-3 py-1.5 bg-white border-2 border-emerald-300 focus:border-emerald-600 rounded-xl text-base font-black text-slate-900 outline-none font-mono-receipt"
+                  oninput="calculateChange()"
+                >
+              </div>
+
+              <div class="bg-white border-2 border-emerald-400 rounded-xl px-3 py-1 flex flex-col justify-center">
+                <span class="text-[9px] font-black uppercase text-slate-400">TROCO</span>
+                <span id="changeDisplay" class="text-lg font-black text-emerald-700 font-mono-receipt leading-none mt-0.5">R$ 0,00</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-1">
+              <button onclick="setCashReceived(10)" class="flex-1 py-1 bg-white hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[10px] font-black text-slate-700">R$ 10</button>
+              <button onclick="setCashReceived(20)" class="flex-1 py-1 bg-white hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[10px] font-black text-slate-700">R$ 20</button>
+              <button onclick="setCashReceived(50)" class="flex-1 py-1 bg-white hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[10px] font-black text-slate-700">R$ 50</button>
+              <button onclick="setCashReceived(100)" class="flex-1 py-1 bg-white hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[10px] font-black text-slate-700">R$ 100</button>
+              <button onclick="setExactCash()" class="flex-1 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-black">Exato</button>
+            </div>
+          </div>
+
+          <!-- SELETOR DE MÚLTIPLAS MAQUININHAS PIX -->
+          <div id="pixMachineBox" class="hidden bg-sky-50 border-2 border-sky-300 rounded-2xl p-3 space-y-2">
+            <span class="text-xs font-black uppercase text-sky-950 flex items-center gap-1">
+              <i class="fa-brands fa-pix text-sky-600 text-sm"></i> Qual Maquininha / Conta está usando?
+            </span>
+
+            <div class="grid grid-cols-3 gap-1.5">
+              <button onclick="selectPixMachine('stone')" id="pixBtn_stone" class="pix-machine-btn py-1.5 px-2 bg-sky-600 text-white rounded-xl text-[10px] font-black border border-sky-600 transition text-center truncate">
+                Maquininha 1 (Stone)
+              </button>
+              <button onclick="selectPixMachine('mercadopago')" id="pixBtn_mercadopago" class="pix-machine-btn py-1.5 px-2 bg-white text-slate-700 rounded-xl text-[10px] font-black border border-slate-200 hover:bg-sky-100 transition text-center truncate">
+                Maquininha 2 (MP)
+              </button>
+              <button onclick="selectPixMachine('balcao')" id="pixBtn_balcao" class="pix-machine-btn py-1.5 px-2 bg-white text-slate-700 rounded-xl text-[10px] font-black border border-slate-200 hover:bg-sky-100 transition text-center truncate">
+                Chave Loja (Balcão)
+              </button>
+            </div>
+
+            <div class="bg-white p-2 rounded-xl border border-sky-200 flex items-center justify-between">
+              <div>
+                <p id="pixActiveMachineName" class="font-black text-xs text-slate-800">Maquininha 1 (Stone / Ton)</p>
+                <p id="pixActiveKeyDisplay" class="text-[10px] text-slate-500 font-mono">Chave: padarianonna@stone.com.br</p>
+              </div>
+              <span class="px-2 py-0.5 bg-sky-100 text-sky-800 font-black text-[9px] rounded-full">Pronto</span>
+            </div>
+          </div>
+
+          <!-- BOTÃO FECHAR VENDA NA ELGIN i9 -->
+          <button 
+            onclick="finalizeSaleAndPrint()" 
+            id="finishSaleBtn"
+            disabled
+            class="w-full py-3.5 bg-[#c5161d] hover:bg-[#a51218] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-base shadow-lg shadow-[#c5161d]/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+          >
+            <i class="fa-solid fa-print"></i>
+            <span>Fechar Venda & Imprimir na Elgin i9</span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- 1. COMPROVANTE TÉRMICO DE VENDA (ELGIN i9 - 80mm)        -->
+  <!-- ======================================================== -->
+  <div id="printableReceipt" class="font-mono-receipt text-black">
+    <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 5px;">
+      <h2 style="font-size: 13px; font-weight: bold; margin: 0;">PADARIA DA NONNA</h2>
+      <p style="font-size: 8px; margin: 2px 0;">Pães, Frios, Bolos & Mercearia</p>
+      <p style="font-size: 8px; margin: 0;">CUPOM NÃO FISCAL DE VENDA</p>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; font-size: 8px; margin-bottom: 4px;">
+      <span id="printDate">06/11/2026 13:00</span>
+      <span id="printOrderNumber">#0001</span>
+    </div>
+
+    <table style="width: 100%; text-align: left; border-collapse: collapse; font-size: 9px; margin-bottom: 5px;">
+      <thead>
+        <tr style="border-bottom: 1px solid #000;">
+          <th style="padding: 2px 0;">ITEM</th>
+          <th style="padding: 2px 0; text-align: center;">QTD</th>
+          <th style="padding: 2px 0; text-align: right;">VALOR</th>
+        </tr>
+      </thead>
+      <tbody id="printItemsTbody"></tbody>
+    </table>
+
+    <div style="border-top: 1px dashed #000; padding-top: 4px; font-size: 9px;">
+      <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px;">
+        <span>TOTAL:</span>
+        <span id="printTotal">R$ 0,00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+        <span>Forma Pagamento:</span>
+        <span id="printPaymentMethod">Dinheiro</span>
+      </div>
+      <div style="display: flex; justify-content: space-between;" id="printCashRow">
+        <span>Recebido:</span>
+        <span id="printCashReceived">R$ 0,00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-weight: bold;" id="printChangeRow">
+        <span>TROCO:</span>
+        <span id="printChange">R$ 0,00</span>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; font-size: 8px;">
+      <p style="margin: 1px 0;">Agradecemos a sua preferência!</p>
+      <p style="margin: 1px 0; font-weight: bold;">Volte Sempre à Padaria da Nonna!</p>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 2. COMPROVANTE DE FECHAMENTO DIÁRIO DE CAIXA (ELGIN i9)  -->
+  <!-- ======================================================== -->
+  <div id="printableClosingReceipt" class="font-mono-receipt text-black">
+    <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 5px;">
+      <h2 style="font-size: 13px; font-weight: bold; margin: 0;">PADARIA DA NONNA</h2>
+      <p style="font-size: 9px; margin: 2px 0; font-weight: bold;">FECHAMENTO DE CAIXA DIÁRIO</p>
+      <p style="font-size: 8px; margin: 0;" id="printClosingDate">Data: 06/11/2026</p>
+    </div>
+
+    <div style="font-size: 9px; margin-bottom: 5px;">
+      <p style="margin: 2px 0;">Total Vendas Realizadas: <strong id="printClosingSalesCount">0</strong></p>
+    </div>
+
+    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; font-size: 9px;">
+      <div style="display: flex; justify-content: space-between;">
+        <span>(+) Dinheiro:</span>
+        <strong id="printClosingDinheiro">R$ 0,00</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>(+) PIX:</span>
+        <strong id="printClosingPix">R$ 0,00</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>(+) Débito:</span>
+        <strong id="printClosingDebito">R$ 0,00</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>(+) Crédito:</span>
+        <strong id="printClosingCredito">R$ 0,00</strong>
+      </div>
+    </div>
+
+    <div style="padding: 4px 0; font-size: 10px;">
+      <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px;">
+        <span>FATURAMENTO BRUTO:</span>
+        <span id="printClosingBruto">R$ 0,00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; color: #555; margin-top: 3px;">
+        <span>(-) Sangrias / Saídas do Caixa:</span>
+        <span id="printClosingSangrias">R$ 0,00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-top: 3px; border-top: 1px solid #000; padding-top: 3px;">
+        <span>VALOR EM GAVETA (Dinheiro):</span>
+        <span id="printClosingGaveta">R$ 0,00</span>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 15px; font-size: 8px;">
+      <p style="border-top: 1px solid #000; width: 80%; margin: 0 auto; padding-top: 2px;">Assinatura do Responsável</p>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: RESUMO DO DIA, ENTRADAS & FECHAMENTO DE CAIXA     -->
+  <!-- ======================================================== -->
+  <div id="closingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 no-print">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-700 text-white flex items-center justify-center text-lg">
+            <i class="fa-solid fa-cash-register"></i>
+          </div>
+          <div>
+            <h3 class="font-black text-slate-900 text-sm">Fechamento de Caixa Diário</h3>
+            <p class="text-[11px] text-slate-400">Total faturado no dia por cada forma de pagamento</p>
+          </div>
+        </div>
+        <button onclick="closeClosingModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl">
+          <span class="text-[9px] font-black uppercase text-slate-400">Dinheiro</span>
+          <p id="modalSumDinheiro" class="text-sm font-black text-slate-900 font-mono-receipt mt-0.5">R$ 0,00</p>
+        </div>
+        <div class="bg-sky-50 border border-sky-200 p-3 rounded-2xl">
+          <span class="text-[9px] font-black uppercase text-sky-600">PIX</span>
+          <p id="modalSumPix" class="text-sm font-black text-sky-950 font-mono-receipt mt-0.5">R$ 0,00</p>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 p-3 rounded-2xl">
+          <span class="text-[9px] font-black uppercase text-blue-600">Débito</span>
+          <p id="modalSumDebito" class="text-sm font-black text-blue-950 font-mono-receipt mt-0.5">R$ 0,00</p>
+        </div>
+        <div class="bg-purple-50 border border-purple-200 p-3 rounded-2xl">
+          <span class="text-[9px] font-black uppercase text-purple-600">Crédito</span>
+          <p id="modalSumCredito" class="text-sm font-black text-purple-950 font-mono-receipt mt-0.5">R$ 0,00</p>
+        </div>
+      </div>
+
+      <div class="bg-emerald-900 text-white p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-black uppercase text-emerald-300">FATURAMENTO TOTAL DO DIA</span>
+          <p id="modalTotalDay" class="text-2xl font-black text-white font-mono-receipt">R$ 0,00</p>
+        </div>
+        <span id="modalSalesCount" class="text-xs font-bold text-emerald-200">0 vendas</span>
+      </div>
+
+      <!-- Sangria / Saída -->
+      <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl space-y-2">
+        <span class="text-xs font-black text-amber-950 flex items-center gap-1">
+          <i class="fa-solid fa-arrow-down-long text-amber-600"></i> Registrar Saída / Sangria (Ex: gás, despesa rápida)
+        </span>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+          <input type="text" id="sangriaMotivo" placeholder="Motivo (ex: Pagamento do Gás)" class="sm:col-span-7 px-3 py-1.5 bg-white border border-amber-300 rounded-xl text-xs font-bold outline-none">
+          <input type="number" step="0.01" id="sangriaValor" placeholder="Valor R$" class="sm:col-span-3 px-3 py-1.5 bg-white border border-amber-300 rounded-xl text-xs font-bold outline-none">
+          <button onclick="addSangria()" class="sm:col-span-2 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-black">Salvar</button>
+        </div>
+        <div id="sangriasListContainer" class="text-[11px] text-amber-900 divide-y divide-amber-200 max-h-20 overflow-y-auto"></div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+        <button onclick="clearDaySales()" class="px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition">
+          Zerar Caixa do Dia
+        </button>
+        <button onclick="printDailyClosing()" class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-1.5">
+          <i class="fa-solid fa-print"></i>
+          <span>Imprimir na Elgin i9</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: GERENCIAMENTO DE PRODUTOS (ADICIONAR / EDITAR)    -->
+  <!-- ======================================================== -->
+  <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 no-print">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-[#c5161d] text-white flex items-center justify-center text-lg">
+            <i class="fa-solid fa-boxes-stacked"></i>
+          </div>
+          <div>
+            <h3 class="font-black text-slate-900 text-sm">Gerenciamento de Produtos & Preços</h3>
+            <p class="text-[11px] text-slate-400">Adicione, edite ou altere preços de qualquer item</p>
+          </div>
+        </div>
+        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Formulário de Cadastro / Edição -->
+      <form onsubmit="handleSaveProduct(event)" class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+        <div class="flex items-center justify-between">
+          <h4 id="formProductTitle" class="text-xs font-black uppercase text-slate-700">Cadastrar Novo Produto</h4>
+          <button type="button" id="cancelEditBtn" onclick="resetProductForm()" class="hidden text-xs text-rose-600 font-bold hover:underline">Cancelar Edição</button>
+        </div>
+        
+        <input type="hidden" id="editingProductId" value="">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Código de Barras (ou dê um bip com a pistola)</label>
+            <input type="text" id="newProdBarcode" placeholder="Ex: 7891000100103" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold focus:border-[#c5161d] outline-none">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Preço Fixo (R$)</label>
+            <input type="number" step="0.01" id="newProdPrice" placeholder="Ex: 5.50" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:border-[#c5161d] outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Nome do Produto</label>
+          <input type="text" id="newProdName" required placeholder="Ex: Café Santa Clara 250g / Óleo de Soja" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:border-[#c5161d] outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Categoria</label>
+            <select id="newProdCategory" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:border-[#c5161d] outline-none">
+              <option value="Mercearia">Mercearia</option>
+              <option value="Padaria">Padaria</option>
+              <option value="Frios">Frios & Laticínios</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Doces">Doces & Biscoitos</option>
+              <option value="Limpeza">Limpeza & Higiene</option>
+            </select>
+          </div>
+          <div class="flex items-center pt-4">
+            <label class="flex items-center space-x-2 text-xs font-bold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="newProdVariable" class="rounded text-[#c5161d] focus:ring-0">
+              <span class="text-[11px]">Preço Livre (Balança / Balcão)</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" id="saveProdBtn" class="w-full py-2.5 bg-[#1b5e3a] hover:bg-emerald-800 text-white font-black rounded-xl text-xs shadow-sm transition">
+          + Salvar Produto
+        </button>
+      </form>
+
+      <!-- Lista Completa de Produtos com Botão de Alterar Preço e Excluir -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-black uppercase text-slate-700 flex items-center justify-between">
+          <span>Produtos Cadastrados na Loja</span>
+          <span class="text-[10px] text-slate-400 font-normal">Clique em editar para mudar o preço</span>
+        </h4>
+        
+        <div class="max-h-60 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-2xl" id="modalProductsTableBody"></div>
+      </div>
+
+      <!-- Configuração de Chaves do Supabase -->
+      <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs space-y-2">
+        <span class="font-black text-emerald-950 flex items-center gap-1.5">
+          <i class="fa-solid fa-cloud text-emerald-600"></i> Conexão com Supabase (Nuvem)
+        </span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input type="text" id="supabaseUrlInput" placeholder="URL: https://xyz.supabase.co" class="px-3 py-1.5 bg-white border border-emerald-300 rounded-xl text-xs font-mono">
+          <input type="text" id="supabaseKeyInput" placeholder="Anon Key: eyJhbGciOi..." class="px-3 py-1.5 bg-white border border-emerald-300 rounded-xl text-xs font-mono">
+        </div>
+        <button onclick="saveSupabaseConfig()" class="w-full py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs transition">Salvar Chaves do Supabase</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT: MOTOR COMPLETO DA PADARIA DA NONNA -->
+  <script>
+    const defaultProducts = [
+      { id: 101, barcode: "101", name: "Pão Francês Tradicional", price: 0.00, category: "Padaria", variable: true },
+      { id: 102, barcode: "102", name: "Pão Doce de Creme", price: 0.00, category: "Padaria", variable: true },
+      { id: 103, barcode: "103", name: "Pão de Queijo Mineiro", price: 0.00, category: "Padaria", variable: true },
+      { id: 104, barcode: "104", name: "Torrada Caseira da Nonna", price: 4.50, category: "Padaria", variable: false },
+      
+      { id: 201, barcode: "201", name: "Queijo Mussarela Fatiado", price: 0.00, category: "Frios", variable: true },
+      { id: 202, barcode: "202", name: "Presunto Cozido Especial", price: 0.00, category: "Frios", variable: true },
+      { id: 203, barcode: "203", name: "Queijo de Coalho do Sertão", price: 0.00, category: "Frios", variable: true },
+      { id: 204, barcode: "7891000100103", name: "Leite Integral Betânia 1L", price: 5.50, category: "Frios", variable: false },
+      { id: 205, barcode: "7891000100202", name: "Manteiga com Sal 200g", price: 11.90, category: "Frios", variable: false },
+
+      { id: 301, barcode: "7896004000012", name: "Café Santa Clara 250g", price: 9.80, category: "Mercearia", variable: false },
+      { id: 302, barcode: "7891000200101", name: "Açúcar Cristal Alegre 1kg", price: 4.20, category: "Mercearia", variable: false },
+      { id: 303, barcode: "7891000200200", name: "Arroz Branco Tio João 1kg", price: 6.50, category: "Mercearia", variable: false },
+      { id: 304, barcode: "7891000200309", name: "Feijão Carioca Kicaldo 1kg", price: 7.90, category: "Mercearia", variable: false },
+      { id: 305, barcode: "7891000200606", name: "Óleo de Soja Soya 900ml", price: 6.90, category: "Mercearia", variable: false },
+      { id: 306, barcode: "7891000200705", name: "Macarrão Espaguete Fortaleza 500g", price: 4.50, category: "Mercearia", variable: false },
+
+      { id: 401, barcode: "7890123456789", name: "Coca-Cola 2 Litros", price: 10.00, category: "Bebidas", variable: false },
+      { id: 402, barcode: "7890123456790", name: "Guaraná Antarctica 2L", price: 8.50, category: "Bebidas", variable: false },
+      { id: 403, barcode: "7890123456791", name: "Água Mineral 500ml", price: 2.50, category: "Bebidas", variable: false },
+
+      { id: 501, barcode: "501", name: "Fatia de Bolo Caseiro", price: 0.00, category: "Doces", variable: true },
+      { id: 502, barcode: "7898012345678", name: "Biscoito Recheado 130g", price: 3.20, category: "Doces", variable: false },
+      { id: 503, barcode: "7898012345679", name: "Biscoito Cream Cracker 400g", price: 5.20, category: "Doces", variable: false },
+
+      { id: 601, barcode: "7899012345601", name: "Detergente Líquido 500ml", price: 2.60, category: "Limpeza", variable: false }
+    ];
+
+    function getProducts() {
+      const stored = localStorage.getItem('nonna_products_db_v4');
+      if (stored) {
+        try { return JSON.parse(stored); } catch(e) {}
+      }
+      return defaultProducts;
+    }
+
+    // ==========================================
+    // CONFIGURAÇÃO DIRETA DO SUPABASE
+    // ==========================================
+    const SUPABASE_URL = localStorage.getItem('supabase_url') || 'https://smzeufyrlibrhwyyrofz.supabase.co';
+    const SUPABASE_ANON_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtemV1ZnlybGlicmh3eXlyb2Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODM0NjEsImV4cCI6MjEwOTU1OTQ2MX0.yM1y6IazTmC5NzwcK0xlRzl8EdXWaiHat48lt1bLGa8';
+
+    let supabaseClient = null;
+    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Supabase conectado com sucesso!");
+      } catch (e) {
+        console.error("Erro ao conectar no Supabase:", e);
+      }
+    } 
+
+    function saveProducts(prods) {
+      localStorage.setItem('nonna_products_db_v4', JSON.stringify(prods));
+    }
+
+    let products = getProducts();
+    let currentCart = [];
+    let currentPaymentMethod = 'Dinheiro';
+    let currentPixMachine = 'stone';
+    let saleCounter = parseInt(localStorage.getItem('nonna_sale_counter') || '1');
+
+    const pixProfiles = {
+      stone: { name: "Maquininha 1 (Stone / Ton)", key: "padarianonna@stone.com.br" },
+      mercadopago: { name: "Maquininha 2 (Mercado Pago)", key: "nonna.mercadopago@pix.com.br" },
+      balcao: { name: "Chave Loja (Balcão)", key: "81999990000 (Celular)" }
+    };
+
+    const scannerInput = document.getElementById('barcodeScannerInput');
+    
+    function keepFocus() {
+      const activeModal = document.getElementById('configModal').classList.contains('flex') || document.getElementById('closingModal').classList.contains('flex');
+      const typingManualPrice = document.activeElement === document.getElementById('quickManualPriceInput');
+      const typingCash = document.activeElement === document.getElementById('cashReceivedInput');
+      const typingSangria = document.activeElement === document.getElementById('sangriaMotivo') || document.activeElement === document.getElementById('sangriaValor');
+      const typingForm = document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement.closest('#configModal');
+
+      if (!activeModal && !typingManualPrice && !typingCash && !typingSangria && !typingForm && document.activeElement !== scannerInput) {
+        scannerInput.focus();
+      }
+    }
+    window.addEventListener('click', () => setTimeout(keepFocus, 200));
+
+    // 1. LEITURA PELA PISTOLA OU INICIAIS
+    function handleScannerKey(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        processCurrentInput();
+      }
+    }
+
+    function processCurrentInput() {
+      const val = scannerInput.value.trim();
+      if (!val) return;
+
+      document.getElementById('autocompleteDropdown').classList.add('hidden');
+
+      // Balança Toledo EAN-13 (Início com 2 e 13 dígitos)
+      if (val.startsWith('2') && val.length === 13) {
+        const prodCode = parseInt(val.substring(1, 6));
+        const cents = parseInt(val.substring(7, 12));
+        const finalPrice = cents / 100;
+
+        const matched = products.find(p => p.id === prodCode || p.barcode === String(prodCode));
+        const itemName = matched ? matched.name : `Item Pesado #${prodCode}`;
+        
+        addToCart(itemName, finalPrice, 1);
+        scannerInput.value = '';
+        return;
+      }
+
+      // Código de Barras Exato
+      const exactBarcode = products.find(p => p.barcode === val);
+      if (exactBarcode) {
+        if (exactBarcode.variable) {
+          prepareManualInput(exactBarcode.name);
+        } else {
+          addToCart(exactBarcode.name, exactBarcode.price, 1);
+        }
+        scannerInput.value = '';
+        return;
+      }
+
+      // Autocomplete por iniciais
+      const lower = val.toLowerCase();
+      const matchedByName = products.filter(p => p.name.toLowerCase().includes(lower));
+      
+      if (matchedByName.length > 0) {
+        const chosen = matchedByName[0];
+        if (chosen.variable) {
+          prepareManualInput(chosen.name);
+        } else {
+          addToCart(chosen.name, chosen.price, 1);
+        }
+        scannerInput.value = '';
+        return;
+      }
+
+      // Se for número digitado direto
+      const numericVal = parseFloat(val.replace(',', '.'));
+      if (!isNaN(numericVal) && numericVal > 0) {
+        addToCart('Item Avulso / Padaria', numericVal, 1);
+        scannerInput.value = '';
+        return;
+      }
+
+      alert(`Produto "${val}" não encontrado no catálogo!`);
+      scannerInput.value = '';
+    }
+
+    // 2. AUTOCOMPLETE
+    function handleLiveSearch(text) {
+      const dd = document.getElementById('autocompleteDropdown');
+      const val = text.trim().toLowerCase();
+
+      if (val.length < 1) {
+        dd.classList.add('hidden');
+        return;
+      }
+
+      const matches = products.filter(p => p.name.toLowerCase().includes(val) || p.barcode.includes(val)).slice(0, 5);
+
+      if (matches.length === 0) {
+        dd.classList.add('hidden');
+        return;
+      }
+
+      dd.innerHTML = matches.map(m => `
+        <div onclick="selectAutocomplete(${m.id})" class="p-3 hover:bg-amber-50 cursor-pointer flex items-center justify-between transition">
+          <div>
+            <p class="font-black text-xs text-slate-800">${m.name}</p>
+            <p class="text-[10px] text-slate-400 font-mono">Cód: ${m.barcode} &bull; ${m.category}</p>
+          </div>
+          <span class="font-black text-xs text-[#c5161d]">
+            ${m.variable ? 'Preço na Balança' : 'R$ ' + m.price.toFixed(2).replace('.', ',')}
+          </span>
+        </div>
+      `).join('');
+
+      dd.classList.remove('hidden');
+    }
+
+    function selectAutocomplete(id) {
+      const item = products.find(p => p.id === id);
+      if (!item) return;
+
+      document.getElementById('autocompleteDropdown').classList.add('hidden');
+      scannerInput.value = '';
+
+      if (item.variable) {
+        prepareManualInput(item.name);
+      } else {
+        addToCart(item.name, item.price, 1);
+      }
+    }
+
+    // 3. VALOR MANUAL NA FRENTE
+    function prepareManualInput(itemName) {
+      const select = document.getElementById('quickManualItemSelect');
+      let found = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value.toLowerCase() === itemName.toLowerCase()) {
+          select.selectedIndex = i;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        const opt = new Option(itemName, itemName, true, true);
+        select.add(opt);
+      }
+      const priceInput = document.getElementById('quickManualPriceInput');
+      priceInput.focus();
+      priceInput.select();
+    }
+
+    function addQuickManualItem() {
+      const name = document.getElementById('quickManualItemSelect').value;
+      const rawPrice = document.getElementById('quickManualPriceInput').value;
+      const price = parseFloat(rawPrice.replace(',', '.'));
+
+      if (isNaN(price) || price <= 0) {
+        alert("Digite um valor válido em reais!");
+        document.getElementById('quickManualPriceInput').focus();
+        return;
+      }
+
+      addToCart(name, price, 1);
+      document.getElementById('quickManualPriceInput').value = '';
+      keepFocus();
+    }
+
+    function setQuickBreadValue(val) {
+      document.getElementById('quickManualItemSelect').value = 'Pão Francês Tradicional';
+      document.getElementById('quickManualPriceInput').value = val.toFixed(2).replace('.', ',');
+      addQuickManualItem();
+    }
+
+    // 4. CARRINHO & TOTAIS
+    function addToCart(name, price, qty = 1) {
+      currentCart.push({
+        id: Date.now() + Math.random(),
+        name,
+        price,
+        qty,
+        total: price * qty
+      });
+
+      renderCart();
+      calculateChange();
+      keepFocus();
+    }
+
+    function removeFromCart(idx) {
+      currentCart.splice(idx, 1);
+      renderCart();
+      calculateChange();
+      keepFocus();
+    }
+
+    function clearCurrentCart() {
+      if (currentCart.length > 0 && confirm("Deseja cancelar esta venda?")) {
+        currentCart = [];
+        document.getElementById('cashReceivedInput').value = '';
+        renderCart();
+        calculateChange();
+      }
+      keepFocus();
+    }
+
+    function getGrandTotal() {
+      return currentCart.reduce((acc, i) => acc + i.total, 0);
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItemsContainer');
+      const totalDisplay = document.getElementById('cartTotalDisplay');
+      const countDisplay = document.getElementById('cartItemsCountDisplay');
+      const finishBtn = document.getElementById('finishSaleBtn');
+
+      if (currentCart.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 text-slate-400 font-sans">
+            <i class="fa-solid fa-cart-shopping text-3xl mb-2 text-slate-300"></i>
+            <p class="font-bold text-xs">Caixa livre</p>
+            <p class="text-[10px] mt-0.5">Aponte a pistola ou selecione o produto</p>
+          </div>
+        `;
+        totalDisplay.innerText = "R$ 0,00";
+        countDisplay.innerText = "0 itens";
+        finishBtn.disabled = true;
+        return;
+      }
+
+      const grandTotal = getGrandTotal();
+      container.innerHTML = currentCart.map((item, idx) => `
+        <div class="py-2 flex items-center justify-between group">
+          <div class="pr-2 truncate">
+            <p class="font-bold text-slate-900 truncate">${item.name}</p>
+            <p class="text-[10px] text-slate-400">${item.qty}x de R$ ${item.price.toFixed(2).replace('.', ',')}</p>
+          </div>
+          <div class="flex items-center space-x-2 shrink-0">
+            <span class="font-black text-slate-900">R$ ${item.total.toFixed(2).replace('.', ',')}</span>
+            <button onclick="removeFromCart(${idx})" class="text-slate-300 hover:text-rose-600 transition p-1">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      totalDisplay.innerText = `R$ ${grandTotal.toFixed(2).replace('.', ',')}`;
+      countDisplay.innerText = `${currentCart.length} item(ns)`;
+      finishBtn.disabled = false;
+    }
+
+    // 5. TROCO & PIX MULTI-MAQUININHA
+    function selectPayment(method) {
+      currentPaymentMethod = method;
+      document.querySelectorAll('.pay-btn').forEach(b => {
+        b.className = "pay-btn py-2 rounded-xl text-xs font-black border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-center";
+      });
+      const activeBtn = document.getElementById(`payBtn${method.replace('é', 'e')}`);
+      if (activeBtn) {
+        activeBtn.className = "pay-btn py-2 rounded-xl text-xs font-black border border-slate-200 bg-[#1b5e3a] text-white transition text-center";
+      }
+
+      const cashBox = document.getElementById('cashChangeBox');
+      const pixBox = document.getElementById('pixMachineBox');
+
+      if (method === 'Dinheiro') {
+        cashBox.classList.remove('hidden');
+        pixBox.classList.add('hidden');
+      } else if (method === 'PIX') {
+        cashBox.classList.add('hidden');
+        pixBox.classList.remove('hidden');
+      } else {
+        cashBox.classList.add('hidden');
+        pixBox.classList.add('hidden');
+      }
+
+      keepFocus();
+    }
+
+    function selectPixMachine(machineKey) {
+      currentPixMachine = machineKey;
+      document.querySelectorAll('.pix-machine-btn').forEach(b => {
+        b.className = "pix-machine-btn py-1.5 px-2 bg-white text-slate-700 rounded-xl text-[10px] font-black border border-slate-200 hover:bg-sky-100 transition text-center truncate";
+      });
+      const active = document.getElementById(`pixBtn_${machineKey}`);
+      if (active) {
+        active.className = "pix-machine-btn py-1.5 px-2 bg-sky-600 text-white rounded-xl text-[10px] font-black border border-sky-600 transition text-center truncate";
+      }
+
+      const profile = pixProfiles[machineKey];
+      if (profile) {
+        document.getElementById('pixActiveMachineName').innerText = profile.name;
+        document.getElementById('pixActiveKeyDisplay').innerText = `Chave: ${profile.key}`;
+      }
+    }
+
+    function calculateChange() {
+      const grandTotal = getGrandTotal();
+      const rawCash = document.getElementById('cashReceivedInput').value.trim();
+      const cash = parseFloat(rawCash.replace(',', '.'));
+      const changeDisplay = document.getElementById('changeDisplay');
+
+      if (isNaN(cash) || cash <= 0) {
+        changeDisplay.innerText = "R$ 0,00";
+        changeDisplay.className = "text-lg font-black text-slate-400 font-mono-receipt leading-none mt-0.5";
+        return;
+      }
+
+      const diff = cash - grandTotal;
+      if (diff >= 0) {
+        changeDisplay.innerText = `R$ ${diff.toFixed(2).replace('.', ',')}`;
+        changeDisplay.className = "text-lg font-black text-emerald-700 font-mono-receipt leading-none mt-0.5";
+      } else {
+        changeDisplay.innerText = `Falta R$ ${Math.abs(diff).toFixed(2).replace('.', ',')}`;
+        changeDisplay.className = "text-xs font-black text-rose-600 font-mono-receipt leading-none mt-0.5";
+      }
+    }
+
+    function setCashReceived(val) {
+      document.getElementById('cashReceivedInput').value = val.toFixed(2).replace('.', ',');
+      selectPayment('Dinheiro');
+      calculateChange();
+    }
+
+    function setExactCash() {
+      const grandTotal = getGrandTotal();
+      document.getElementById('cashReceivedInput').value = grandTotal.toFixed(2).replace('.', ',');
+      calculateChange();
+    }
+
+    // 6. FECHAR VENDA & IMPRESSÃO NA ELGIN i9 (80mm)
+    function finalizeSaleAndPrint() {
+      if (currentCart.length === 0) return;
+
+      const grandTotal = getGrandTotal();
+      const rawCash = document.getElementById('cashReceivedInput').value.trim();
+      const cashVal = parseFloat(rawCash.replace(',', '.')) || grandTotal;
+      const changeVal = Math.max(0, cashVal - grandTotal);
+
+      const now = new Date();
+      document.getElementById('printDate').innerText = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR').substring(0, 5);
+      document.getElementById('printOrderNumber').innerText = `#${String(saleCounter).padStart(4, '0')}`;
+      document.getElementById('printTotal').innerText = `R$ ${grandTotal.toFixed(2).replace('.', ',')}`;
+      
+      let payText = currentPaymentMethod;
+      if (currentPaymentMethod === 'PIX') {
+        payText = `PIX (${pixProfiles[currentPixMachine].name})`;
+      }
+      document.getElementById('printPaymentMethod').innerText = payText;
+
+      if (currentPaymentMethod === 'Dinheiro' && cashVal > grandTotal) {
+        document.getElementById('printCashRow').style.display = 'flex';
+        document.getElementById('printChangeRow').style.display = 'flex';
+        document.getElementById('printCashReceived').innerText = `R$ ${cashVal.toFixed(2).replace('.', ',')}`;
+        document.getElementById('printChange').innerText = `R$ ${changeVal.toFixed(2).replace('.', ',')}`;
+      } else {
+        document.getElementById('printCashRow').style.display = 'none';
+        document.getElementById('printChangeRow').style.display = 'none';
+      }
+
+      const printTbody = document.getElementById('printItemsTbody');
+      printTbody.innerHTML = currentCart.map(item => `
+        <tr style="border-bottom: 1px dotted #ccc;">
+          <td style="padding: 2px 0;">${item.name}</td>
+          <td style="padding: 2px 0; text-align: center;">${item.qty}</td>
+          <td style="padding: 2px 0; text-align: right;">R$ ${item.total.toFixed(2).replace('.', ',')}</td>
+        </tr>
+      `).join('');
+
+      saveSaleRecord({
+        id: saleCounter,
+        date: now.toISOString(),
+        total: grandTotal,
+        payment: currentPaymentMethod,
+        items: [...currentCart]
+      });
+
+      saleCounter++;
+      localStorage.setItem('nonna_sale_counter', saleCounter.toString());
+
+      document.getElementById('printableReceipt').classList.add('active-print');
+      document.getElementById('printableClosingReceipt').classList.remove('active-print');
+
+      window.print();
+
+      document.getElementById('printableReceipt').classList.remove('active-print');
+
+      currentCart = [];
+      document.getElementById('cashReceivedInput').value = '';
+      renderCart();
+      calculateChange();
+      keepFocus();
+    }
+
+    function saveSaleRecord(sale) {
+      const history = JSON.parse(localStorage.getItem('nonna_sales_history_v4') || '[]');
+      history.unshift(sale);
+      localStorage.setItem('nonna_sales_history_v4', JSON.stringify(history));
+    }
+
+    // 7. FECHAMENTO DE CAIXA DIÁRIO & SANGRIA
+    function getTodaySales() {
+      const history = JSON.parse(localStorage.getItem('nonna_sales_history_v4') || '[]');
+      const todayStr = new Date().toISOString().split('T')[0];
+      return history.filter(h => h.date && h.date.startsWith(todayStr));
+    }
+
+    function getTodaySangrias() {
+      return JSON.parse(localStorage.getItem('nonna_sangrias_today_v4') || '[]');
+    }
+
+    function openClosingModal() {
+      updateClosingModalData();
+      document.getElementById('closingModal').classList.remove('hidden');
+      document.getElementById('closingModal').classList.add('flex');
+    }
+
+    function closeClosingModal() {
+      document.getElementById('closingModal').classList.remove('flex');
+      document.getElementById('closingModal').classList.add('hidden');
+      keepFocus();
+    }
+
+    function updateClosingModalData() {
+      const sales = getTodaySales();
+      const sangrias = getTodaySangrias();
+
+      let sumDinheiro = 0, sumPix = 0, sumDebito = 0, sumCredito = 0;
+      sales.forEach(s => {
+        if (s.payment === 'Dinheiro') sumDinheiro += s.total;
+        else if (s.payment === 'PIX') sumPix += s.total;
+        else if (s.payment === 'Débito') sumDebito += s.total;
+        else if (s.payment === 'Crédito') sumCredito += s.total;
+      });
+
+      const totalDay = sumDinheiro + sumPix + sumDebito + sumCredito;
+      const totalSangrias = sangrias.reduce((acc, s) => acc + s.valor, 0);
+
+      document.getElementById('modalSumDinheiro').innerText = `R$ ${sumDinheiro.toFixed(2).replace('.', ',')}`;
+      document.getElementById('modalSumPix').innerText = `R$ ${sumPix.toFixed(2).replace('.', ',')}`;
+      document.getElementById('modalSumDebito').innerText = `R$ ${sumDebito.toFixed(2).replace('.', ',')}`;
+      document.getElementById('modalSumCredito').innerText = `R$ ${sumCredito.toFixed(2).replace('.', ',')}`;
+      document.getElementById('modalTotalDay').innerText = `R$ ${totalDay.toFixed(2).replace('.', ',')}`;
+      document.getElementById('modalSalesCount').innerText = `${sales.length} vendas registradas hoje`;
+
+      const sangriasContainer = document.getElementById('sangriasListContainer');
+      if (sangrias.length === 0) {
+        sangriasContainer.innerHTML = `<p class="py-1 text-slate-400">Nenhuma saída registrada hoje.</p>`;
+      } else {
+        sangriasContainer.innerHTML = sangrias.map(s => `
+          <div class="py-1 flex justify-between font-bold">
+            <span>${s.motivo}</span>
+            <span class="text-rose-700">- R$ ${s.valor.toFixed(2).replace('.', ',')}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function addSangria() {
+      const motivo = document.getElementById('sangriaMotivo').value.trim() || 'Retirada Diversa';
+      const valor = parseFloat(document.getElementById('sangriaValor').value);
+
+      if (isNaN(valor) || valor <= 0) {
+        alert("Informe um valor válido para a sangria!");
+        return;
+      }
+
+      const sangrias = getTodaySangrias();
+      sangrias.push({ motivo, valor, date: new Date().toISOString() });
+      localStorage.setItem('nonna_sangrias_today_v4', JSON.stringify(sangrias));
+
+      document.getElementById('sangriaMotivo').value = '';
+      document.getElementById('sangriaValor').value = '';
+      updateClosingModalData();
+    }
+
+    function printDailyClosing() {
+      const sales = getTodaySales();
+      const sangrias = getTodaySangrias();
+
+      let sumDinheiro = 0, sumPix = 0, sumDebito = 0, sumCredito = 0;
+      sales.forEach(s => {
+        if (s.payment === 'Dinheiro') sumDinheiro += s.total;
+        else if (s.payment === 'PIX') sumPix += s.total;
+        else if (s.payment === 'Débito') sumDebito += s.total;
+        else if (s.payment === 'Crédito') sumCredito += s.total;
+      });
+
+      const bruto = sumDinheiro + sumPix + sumDebito + sumCredito;
+      const totalSangrias = sangrias.reduce((acc, s) => acc + s.valor, 0);
+      const gaveta = Math.max(0, sumDinheiro - totalSangrias);
+
+      const now = new Date();
+      document.getElementById('printClosingDate').innerText = `Data: ${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR').substring(0, 5)}`;
+      document.getElementById('printClosingSalesCount').innerText = sales.length;
+      document.getElementById('printClosingDinheiro').innerText = `R$ ${sumDinheiro.toFixed(2).replace('.', ',')}`;
+      document.getElementById('printClosingPix').innerText = `R$ ${sumPix.toFixed(2).replace('.', ',')}`;
+      document.getElementById('printClosingDebito').innerText = `R$ ${sumDebito.toFixed(2).replace('.', ',')}`;
+      document.getElementById('printClosingCredito').innerText = `R$ ${sumCredito.toFixed(2).replace('.', ',')}`;
+      document.getElementById('printClosingBruto').innerText = `R$ ${bruto.toFixed(2).replace('.', ',')}`;
+      document.getElementById('printClosingSangrias').innerText = `R$ ${totalSangrias.toFixed(2).replace('.', ',')}`;
+      document.getElementById('printClosingGaveta').innerText = `R$ ${gaveta.toFixed(2).replace('.', ',')}`;
+
+      document.getElementById('printableClosingReceipt').classList.add('active-print');
+      document.getElementById('printableReceipt').classList.remove('active-print');
+
+      window.print();
+
+      document.getElementById('printableClosingReceipt').classList.remove('active-print');
+    }
+
+    function clearDaySales() {
+      if (confirm("Deseja zerar os registros de vendas e sangrias de hoje?")) {
+        localStorage.removeItem('nonna_sangrias_today_v4');
+        const history = JSON.parse(localStorage.getItem('nonna_sales_history_v4') || '[]');
+        const todayStr = new Date().toISOString().split('T')[0];
+        const remaining = history.filter(h => !h.date || !h.date.startsWith(todayStr));
+        localStorage.setItem('nonna_sales_history_v4', JSON.stringify(remaining));
+        updateClosingModalData();
+        alert("Caixa do dia zerado com sucesso!");
+      }
+    }
+
+    // 8. CATÁLOGO VISUAL & CRUD COMPLETO (ADICIONAR, EDITAR PREÇO, EXCLUIR)
+    function renderProductsCatalog() {
+      const grid = document.getElementById('productsQuickGrid');
+      const cat = document.getElementById('categoryFilter').value;
+
+      const filtered = products.filter(p => cat === 'all' || p.category === cat);
+      document.getElementById('registeredProductsCount').innerText = `${filtered.length} itens`;
+
+      grid.innerHTML = filtered.map(p => `
+        <button onclick="${p.variable ? `prepareManualInput('${p.name}')` : `addToCart('${p.name}', ${p.price}, 1)`}" class="p-3 bg-slate-50 hover:bg-amber-50/70 border border-slate-200/80 rounded-2xl text-left transition flex flex-col justify-between min-h-[80px] group">
+          <div>
+            <span class="text-[9px] font-black uppercase text-slate-400 block truncate">${p.category}</span>
+            <p class="font-black text-xs text-slate-800 leading-snug truncate mt-0.5">${p.name}</p>
+          </div>
+          <div class="flex items-center justify-between w-full mt-1.5">
+            <span class="text-[11px] font-black text-[#c5161d]">
+              ${p.variable ? 'Balança' : 'R$ ' + p.price.toFixed(2).replace('.', ',')}
+            </span>
+            <i class="fa-solid fa-plus text-[10px] text-slate-300 group-hover:text-[#c5161d] transition"></i>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    function renderModalProductsTable() {
+      const container = document.getElementById('modalProductsTableBody');
+      if (products.length === 0) {
+        container.innerHTML = `<p class="p-4 text-center text-xs text-slate-400">Nenhum produto cadastrado.</p>`;
+        return;
+      }
+
+      container.innerHTML = products.map(p => `
+        <div class="p-2.5 flex items-center justify-between hover:bg-slate-50 transition">
+          <div class="pr-2 truncate">
+            <p class="font-bold text-xs text-slate-900 truncate">${p.name}</p>
+            <p class="text-[10px] text-slate-400 font-mono">Cód: ${p.barcode} &bull; ${p.category} &bull; ${p.variable ? 'Preço Livre' : 'R$ ' + p.price.toFixed(2).replace('.', ',')}</p>
+          </div>
+          <div class="flex items-center space-x-1.5 shrink-0">
+            <button onclick="startEditProduct(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-xs font-black transition flex items-center gap-1" title="Alterar Preço / Nome">
+              <i class="fa-solid fa-pen text-[10px]"></i>
+              <span>Editar</span>
+            </button>
+            <button onclick="deleteProduct(${p.id})" class="p-1.5 text-slate-400 hover:text-rose-600 transition" title="Excluir">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function startEditProduct(id) {
+      const item = products.find(p => p.id === id);
+      if (!item) return;
+
+      document.getElementById('editingProductId').value = item.id;
+      document.getElementById('newProdBarcode').value = item.barcode;
+      document.getElementById('newProdName').value = item.name;
+      document.getElementById('newProdPrice').value = item.price.toFixed(2);
+      document.getElementById('newProdCategory').value = item.category;
+      document.getElementById('newProdVariable').checked = item.variable;
+
+      document.getElementById('formProductTitle').innerText = "Editar Produto / Alterar Preço";
+      document.getElementById('saveProdBtn').innerText = "Salvar Alterações";
+      document.getElementById('saveProdBtn').className = "w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs shadow-sm transition";
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      document.getElementById('newProdPrice').focus();
+    }
+
+    function resetProductForm() {
+      document.getElementById('editingProductId').value = "";
+      document.getElementById('newProdBarcode').value = "";
+      document.getElementById('newProdName').value = "";
+      document.getElementById('newProdPrice').value = "";
+      document.getElementById('newProdVariable').checked = false;
+
+      document.getElementById('formProductTitle').innerText = "Cadastrar Novo Produto";
+      document.getElementById('saveProdBtn').innerText = "+ Salvar Produto";
+      document.getElementById('saveProdBtn').className = "w-full py-2.5 bg-[#1b5e3a] hover:bg-emerald-800 text-white font-black rounded-xl text-xs shadow-sm transition";
+      document.getElementById('cancelEditBtn').classList.add('hidden');
+    }
+
+    function openConfigModal() {
+      resetProductForm();
+      renderModalProductsTable();
+      document.getElementById('configModal').classList.remove('hidden');
+      document.getElementById('configModal').classList.add('flex');
+    }
+
+    function closeConfigModal() {
+      document.getElementById('configModal').classList.remove('flex');
+      document.getElementById('configModal').classList.add('hidden');
+      keepFocus();
+    }
+
+    function handleSaveProduct(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editingProductId').value;
+      const barcode = document.getElementById('newProdBarcode').value.trim() || String(Date.now()).slice(-6);
+      const name = document.getElementById('newProdName').value.trim();
+      const price = parseFloat(document.getElementById('newProdPrice').value) || 0.00;
+      const category = document.getElementById('newProdCategory').value;
+      const variable = document.getElementById('newProdVariable').checked;
+
+      if (editId) {
+        // Alteração de produto existente
+        const idx = products.findIndex(p => p.id == editId);
+        if (idx !== -1) {
+          products[idx] = { id: parseInt(editId), barcode, name, price, category, variable };
+        }
+        alert(`Produto "${name}" alterado com sucesso!`);
+      } else {
+        // Novo produto
+        products.unshift({
+          id: Date.now(),
+          barcode,
+          name,
+          price,
+          category,
+          variable
+        });
+        alert(`Produto "${name}" cadastrado com sucesso!`);
+      }
+
+      saveProducts(products);
+      renderProductsCatalog();
+      renderModalProductsTable();
+      resetProductForm();
+    }
+
+    function deleteProduct(id) {
+      const item = products.find(p => p.id === id);
+      if (item && confirm(`Deseja realmente excluir "${item.name}"?`)) {
+        products = products.filter(p => p.id !== id);
+        saveProducts(products);
+        renderProductsCatalog();
+        renderModalProductsTable();
+      }
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('supabaseUrlInput').value.trim();
+      const key = document.getElementById('supabaseKeyInput').value.trim();
+      if (!url || !key) {
+        alert("Preencha a URL e a Anon Key do Supabase!");
+        return;
+      }
+      localStorage.setItem('nonna_supabase_url', url);
+      localStorage.setItem('nonna_supabase_key', key);
+      alert("Configurações do Supabase salvas com sucesso!");
+    }
+
+    // Inicialização
+    renderProductsCatalog();
+    renderCart();
+    setTimeout(keepFocus, 300);
+  </script>
+</body>
+</html>
