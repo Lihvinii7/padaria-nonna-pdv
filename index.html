@@ -315,13 +315,17 @@
                   id="cashReceivedInput" 
                   placeholder="Ex: 50,00" 
                   class="w-full px-3 py-1.5 bg-white border-2 border-emerald-300 focus:border-emerald-600 rounded-xl text-base font-black text-slate-900 outline-none font-mono-receipt"
-                  oninput="calculateChange()"
+                  oninput="handleCashInputAuto(this.value)"
+                  onkeydown="if(event.key === 'Enter') triggerVisualChangeNow()"
                 >
               </div>
 
               <div class="bg-white border-2 border-emerald-400 rounded-xl px-3 py-1 flex flex-col justify-center">
                 <span class="text-[9px] font-black uppercase text-slate-400">TROCO</span>
                 <span id="changeDisplay" class="text-lg font-black text-emerald-700 font-mono-receipt leading-none mt-0.5">R$ 0,00</span>
+                <button type="button" onclick="triggerVisualChangeNow()" class="mt-1 text-[10px] font-black text-emerald-700 underline flex items-center gap-1 justify-center">
+                  <i class="fa-solid fa-eye"></i> Ver Notas & Moedas
+                </button>
               </div>
             </div>
 
@@ -332,18 +336,7 @@
               <button onclick="setCashReceived(100)" class="flex-1 py-1 bg-white hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[10px] font-black text-slate-700">R$ 100</button>
               <button onclick="setExactCash()" class="flex-1 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-black">Exato</button>
             </div>
-
-            <!-- GUIA VISUAL DE QUAIS NOTAS E MOEDAS ENTREGAR AO CLIENTE -->
-            <div id="trocoSugestaoBox" class="hidden pt-2 border-t border-emerald-200/80">
-              <p class="text-[10px] font-black text-emerald-900 uppercase tracking-wide flex items-center gap-1 mb-1.5">
-                <i class="fa-solid fa-hand-holding-hand text-emerald-600"></i> Notas e Moedas para Entregar:
-              </p>
-              <div id="trocoItensContainer" class="flex flex-wrap gap-1.5 items-center">
-                <!-- Ícones gerados automaticamente -->
-              </div>
-            </div>
           </div>
-
 
           <!-- Módulo PIX -->
           <div id="pixMachineBox" class="hidden bg-sky-50 border-2 border-sky-300 rounded-2xl p-3 space-y-2">
@@ -708,6 +701,64 @@
   </div>
 
   <!-- ======================================================== -->
+  <!-- MODAL GRANDE VISUAL: NOTAS E MOEDAS (ACESSIBILIDADE)     -->
+  <!-- ======================================================== -->
+  <div id="visualChangeModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[110] hidden flex items-center justify-center p-3 sm:p-5 no-print">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border-2 border-emerald-500 overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Cabeçalho -->
+      <div class="bg-[#1b5e3a] text-white px-6 py-4 flex items-center justify-between border-b border-emerald-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shadow-inner">
+            💵
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-black tracking-tight">
+              Entregar Troco ao Cliente
+            </h3>
+            <p class="text-xs text-emerald-200 font-bold uppercase tracking-wider">
+              Padaria da Nonna &bull; Guia Visual de Notas e Moedas
+            </p>
+          </div>
+        </div>
+        <button onclick="closeVisualChangeModal()" class="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center text-lg transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Valor Total do Troco -->
+      <div class="p-4 sm:p-5 bg-emerald-50 border-b border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-center sm:text-left">
+        <div>
+          <span class="text-xs font-black uppercase text-emerald-800 tracking-wider">VALOR TOTAL DO TROCO:</span>
+          <p id="visualChangeTotalVal" class="text-3xl sm:text-4xl font-black text-emerald-700 font-mono-receipt leading-none mt-1">
+            R$ 0,00
+          </p>
+        </div>
+        <div class="bg-white px-4 py-2 rounded-2xl border border-emerald-300 text-xs text-slate-600 font-semibold shadow-xs">
+          <span class="text-emerald-800 font-bold">Dica da Gaveta:</span> Pegue as notas e moedas mostradas abaixo!
+        </div>
+      </div>
+
+      <!-- Grid com as Notas e Moedas Grandes -->
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-4">
+        <div id="visualChangeItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- Botão Grande de Concluir -->
+      <div class="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between gap-3">
+        <button onclick="closeVisualChangeModal()" class="px-5 py-3 rounded-2xl font-bold text-xs text-slate-600 hover:bg-slate-200 transition">
+          Fechar
+        </button>
+        <button onclick="closeVisualChangeModal()" class="px-6 py-3.5 bg-[#1b5e3a] hover:bg-emerald-800 text-white font-black rounded-2xl text-sm sm:text-base shadow-lg shadow-emerald-900/20 transition flex items-center gap-2">
+          <i class="fa-solid fa-check-double"></i>
+          <span>Já Entreguei o Troco</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
   <!-- JAVASCRIPT: MOTOR E REGRAS DE NEGÓCIO                   -->
   <!-- ======================================================== -->
   <script>
@@ -812,8 +863,9 @@
       const modalConfigOpen = document.getElementById('configModal').classList.contains('flex');
       const modalClosingOpen = document.getElementById('closingModal').classList.contains('flex');
       const modalAuthOpen = !document.getElementById('authPasswordModal').classList.contains('hidden');
+      const modalVisualChangeOpen = !document.getElementById('visualChangeModal').classList.contains('hidden');
 
-      if (modalConfigOpen || modalClosingOpen || modalAuthOpen) {
+      if (modalConfigOpen || modalClosingOpen || modalAuthOpen || modalVisualChangeOpen) {
         return;
       }
 
@@ -1096,32 +1148,279 @@
       }
     }
 
-    // Separa as notas e moedas mais eficientes para o troco
-    function getChangeBreakdown(amount) {
-      let cents = Math.round(amount * 100);
-      const items = [
-        { type: 'nota', val: 10000, label: 'R$ 100', color: 'bg-cyan-600 text-white border-cyan-700' },
-        { type: 'nota', val: 5000,  label: 'R$ 50',  color: 'bg-amber-600 text-white border-amber-700' },
-        { type: 'nota', val: 2000,  label: 'R$ 20',  color: 'bg-yellow-500 text-slate-900 border-yellow-600' },
-        { type: 'nota', val: 1000,  label: 'R$ 10',  color: 'bg-rose-600 text-white border-rose-700' },
-        { type: 'nota', val: 500,   label: 'R$ 5',   color: 'bg-purple-600 text-white border-purple-700' },
-        { type: 'nota', val: 200,   label: 'R$ 2',   color: 'bg-sky-600 text-white border-sky-700' },
-        { type: 'moeda', val: 100,  label: 'R$ 1',   color: 'bg-amber-100 text-amber-900 border-amber-400' },
-        { type: 'moeda', val: 50,   label: '50¢',    color: 'bg-slate-200 text-slate-800 border-slate-400' },
-        { type: 'moeda', val: 25,   label: '25¢',    color: 'bg-amber-200 text-amber-900 border-amber-400' },
-        { type: 'moeda', val: 10,   label: '10¢',    color: 'bg-amber-300 text-amber-950 border-amber-500' },
-        { type: 'moeda', val: 5,    label: '5¢',     color: 'bg-orange-300 text-orange-950 border-orange-500' }
-      ];
+    // Dicionário com o desenho de cada cédula e moeda do Real (Sem repetição)
+    const REAL_CURRENCY_DESIGNS = {
+      10000: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-cyan-700 bg-gradient-to-r from-cyan-600 to-sky-700 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-32">
+            <div class="flex justify-between items-start">
+              <span class="text-2xl font-black font-mono-receipt tracking-wider">100</span>
+              <span class="bg-black/30 backdrop-blur-xs px-2.5 py-1 rounded-xl text-xs font-black uppercase text-amber-200 border border-white/20">
+                PEGUE ${qty} ${qty > 1 ? 'NOTAS' : 'NOTA'}
+              </span>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-cyan-100">REPÚBLICA FEDERATIVA DO BRASIL</p>
+                <p class="text-sm font-black text-amber-200">CEM REAIS (AZUL)</p>
+              </div>
+              <span class="text-2xl opacity-75">🐟</span>
+            </div>
+          </div>
+        `
+      },
+      5000: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-amber-800 bg-gradient-to-r from-amber-700 via-yellow-600 to-amber-800 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-32">
+            <div class="flex justify-between items-start">
+              <span class="text-2xl font-black font-mono-receipt tracking-wider">50</span>
+              <span class="bg-black/30 backdrop-blur-xs px-2.5 py-1 rounded-xl text-xs font-black uppercase text-amber-200 border border-white/20">
+                PEGUE ${qty} ${qty > 1 ? 'NOTAS' : 'NOTA'}
+              </span>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-amber-100">REPÚBLICA FEDERATIVA DO BRASIL</p>
+                <p class="text-sm font-black text-amber-200">CINQUENTA REAIS (MARROM)</p>
+              </div>
+              <span class="text-2xl opacity-75">🐆</span>
+            </div>
+          </div>
+        `
+      },
+      2000: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-yellow-600 bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-600 text-slate-900 shadow-md relative overflow-hidden flex flex-col justify-between h-32">
+            <div class="flex justify-between items-start">
+              <span class="text-2xl font-black font-mono-receipt tracking-wider">20</span>
+              <span class="bg-black/80 px-2.5 py-1 rounded-xl text-xs font-black uppercase text-yellow-300 border border-yellow-400">
+                PEGUE ${qty} ${qty > 1 ? 'NOTAS' : 'NOTA'}
+              </span>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-amber-950">REPÚBLICA FEDERATIVA DO BRASIL</p>
+                <p class="text-sm font-black text-amber-950">VINTE REAIS (AMARELA)</p>
+              </div>
+              <span class="text-2xl">🐒</span>
+            </div>
+          </div>
+        `
+      },
+      1000: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-rose-800 bg-gradient-to-r from-rose-700 via-red-600 to-rose-800 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-32">
+            <div class="flex justify-between items-start">
+              <span class="text-2xl font-black font-mono-receipt tracking-wider">10</span>
+              <span class="bg-black/30 backdrop-blur-xs px-2.5 py-1 rounded-xl text-xs font-black uppercase text-amber-200 border border-white/20">
+                PEGUE ${qty} ${qty > 1 ? 'NOTAS' : 'NOTA'}
+              </span>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-rose-100">REPÚBLICA FEDERATIVA DO BRASIL</p>
+                <p class="text-sm font-black text-amber-200">DEZ REAIS (VERMELHA)</p>
+              </div>
+              <span class="text-2xl opacity-75">🦜</span>
+            </div>
+          </div>
+        `
+      },
+      500: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-purple-800 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-32">
+            <div class="flex justify-between items-start">
+              <span class="text-2xl font-black font-mono-receipt tracking-wider">5</span>
+              <span class="bg-black/30 backdrop-blur-xs px-2.5 py-1 rounded-xl text-xs font-black uppercase text-amber-200 border border-white/20">
+                PEGUE ${qty} ${qty > 1 ? 'NOTAS' : 'NOTA'}
+              </span>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-purple-100">REPÚBLICA FEDERATIVA DO BRASIL</p>
+                <p class="text-sm font-black text-amber-200">CINCO REAIS (ROXA)</p>
+              </div>
+              <span class="text-2xl opacity-75">🦩</span>
+            </div>
+          </div>
+        `
+      },
+      200: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-blue-900 bg-gradient-to-r from-blue-700 via-sky-600 to-blue-800 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-32">
+            <div class="flex justify-between items-start">
+              <span class="text-2xl font-black font-mono-receipt tracking-wider">2</span>
+              <span class="bg-black/30 backdrop-blur-xs px-2.5 py-1 rounded-xl text-xs font-black uppercase text-amber-200 border border-white/20">
+                PEGUE ${qty} ${qty > 1 ? 'NOTAS' : 'NOTA'}
+              </span>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-blue-100">REPÚBLICA FEDERATIVA DO BRASIL</p>
+                <p class="text-sm font-black text-amber-200">DOIS REAIS (AZUL)</p>
+              </div>
+              <span class="text-2xl opacity-75">🐢</span>
+            </div>
+          </div>
+        `
+      },
+      100: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-amber-300 bg-amber-50 shadow-md flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-14 h-14 rounded-full bg-amber-300 border-4 border-amber-500 p-1 flex items-center justify-center shadow-md shrink-0">
+                <div class="w-full h-full rounded-full bg-slate-200 border-2 border-slate-300 flex items-center justify-center font-black text-slate-800 text-xs">
+                  1 REAL
+                </div>
+              </div>
+              <div>
+                <p class="font-black text-sm text-amber-950">MOEDA DE R$ 1,00</p>
+                <p class="text-[10px] text-amber-700 font-bold">Borda dourada / Centro prata</p>
+              </div>
+            </div>
+            <span class="bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-black uppercase">
+              ${qty}x MOEDA
+            </span>
+          </div>
+        `
+      },
+      50: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-slate-300 bg-slate-50 shadow-md flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-14 h-14 rounded-full bg-slate-200 border-4 border-slate-400 flex items-center justify-center shadow-md shrink-0 font-black text-slate-800 text-xs text-center leading-tight">
+                50¢
+              </div>
+              <div>
+                <p class="font-black text-sm text-slate-900">50 CENTAVOS</p>
+                <p class="text-[10px] text-slate-500 font-bold">Moeda prateada grossa</p>
+              </div>
+            </div>
+            <span class="bg-slate-700 text-white px-3 py-1.5 rounded-xl text-xs font-black uppercase">
+              ${qty}x MOEDA
+            </span>
+          </div>
+        `
+      },
+      25: {
+        render: (qty) => `
+          <div class="p-3.5 rounded-2xl border-2 border-amber-300 bg-amber-50/60 shadow-md flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-13 h-13 rounded-full bg-amber-200 border-4 border-amber-400 flex items-center justify-center shadow-md shrink-0 font-black text-amber-950 text-xs">
+                25¢
+              </div>
+              <div>
+                <p class="font-black text-sm text-amber-950">25 CENTAVOS</p>
+                <p class="text-[10px] text-amber-700 font-bold">Moeda dourada</p>
+              </div>
+            </div>
+            <span class="bg-amber-700 text-white px-2.5 py-1 rounded-xl text-xs font-black uppercase">
+              ${qty}x MOEDA
+            </span>
+          </div>
+        `
+      },
+      10: {
+        render: (qty) => `
+          <div class="p-3 rounded-2xl border-2 border-amber-300 bg-amber-50/60 shadow-md flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-12 h-12 rounded-full bg-amber-300 border-3 border-amber-500 flex items-center justify-center shadow-sm shrink-0 font-black text-amber-950 text-[11px]">
+                10¢
+              </div>
+              <div>
+                <p class="font-black text-sm text-amber-950">10 CENTAVOS</p>
+                <p class="text-[10px] text-amber-700 font-bold">Moeda dourada pequena</p>
+              </div>
+            </div>
+            <span class="bg-amber-600 text-white px-2.5 py-1 rounded-xl text-xs font-black uppercase">
+              ${qty}x MOEDA
+            </span>
+          </div>
+        `
+      },
+      5: {
+        render: (qty) => `
+          <div class="p-3 rounded-2xl border-2 border-orange-300 bg-orange-50 shadow-md flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-12 h-12 rounded-full bg-orange-400 border-3 border-orange-600 flex items-center justify-center shadow-sm shrink-0 font-black text-white text-[11px]">
+                5¢
+              </div>
+              <div>
+                <p class="font-black text-sm text-orange-950">5 CENTAVOS</p>
+                <p class="text-[10px] text-orange-700 font-bold">Moeda acobreada</p>
+              </div>
+            </div>
+            <span class="bg-orange-700 text-white px-2.5 py-1 rounded-xl text-xs font-black uppercase">
+              ${qty}x MOEDA
+            </span>
+          </div>
+        `
+      }
+    };
 
-      const result = [];
-      for (const item of items) {
-        if (cents >= item.val) {
-          const qty = Math.floor(cents / item.val);
-          cents %= item.val;
-          result.push({ ...item, qty });
+    function openVisualChangeModal(amount) {
+      const modal = document.getElementById('visualChangeModal');
+      const totalVal = document.getElementById('visualChangeTotalVal');
+      const grid = document.getElementById('visualChangeItemsGrid');
+
+      if (!modal || !grid) return;
+
+      totalVal.innerText = `R$ ${amount.toFixed(2).replace('.', ',')}`;
+
+      let cents = Math.round(amount * 100);
+      const values = [10000, 5000, 2000, 1000, 500, 200, 100, 50, 25, 10, 5];
+      let html = '';
+
+      for (const v of values) {
+        if (cents >= v) {
+          const qty = Math.floor(cents / v);
+          cents %= v;
+          if (REAL_CURRENCY_DESIGNS[v]) {
+            html += REAL_CURRENCY_DESIGNS[v].render(qty);
+          }
         }
       }
-      return result;
+
+      grid.innerHTML = html;
+      modal.classList.remove('hidden');
+    }
+
+    function closeVisualChangeModal() {
+      const modal = document.getElementById('visualChangeModal');
+      if (modal) modal.classList.add('hidden');
+      keepFocus();
+    }
+
+    let changeAutoTimer = null;
+
+    // Dispara a janela grande automaticamente 600ms após terminar de digitar o valor
+    function handleCashInputAuto(val) {
+      calculateChange();
+      clearTimeout(changeAutoTimer);
+
+      const grandTotal = getGrandTotal();
+      const cash = parseFloat(val.replace(',', '.'));
+
+      if (!isNaN(cash) && cash > grandTotal) {
+        changeAutoTimer = setTimeout(() => {
+          const diff = cash - grandTotal;
+          if (diff > 0.009) {
+            openVisualChangeModal(diff);
+          }
+        }, 600);
+      }
+    }
+
+    // Se apertar ENTER no campo de dinheiro, abre na hora
+    function triggerVisualChangeNow() {
+      clearTimeout(changeAutoTimer);
+      const grandTotal = getGrandTotal();
+      const rawCash = document.getElementById('cashReceivedInput').value.trim();
+      const cash = parseFloat(rawCash.replace(',', '.'));
+
+      if (!isNaN(cash) && cash > grandTotal) {
+        openVisualChangeModal(cash - grandTotal);
+      }
     }
 
     function calculateChange() {
@@ -1129,41 +1428,20 @@
       const rawCash = document.getElementById('cashReceivedInput').value.trim();
       const cash = parseFloat(rawCash.replace(',', '.'));
       const changeDisplay = document.getElementById('changeDisplay');
-      const sugestaoBox = document.getElementById('trocoSugestaoBox');
-      const itensContainer = document.getElementById('trocoItensContainer');
 
       if (isNaN(cash) || cash <= 0) {
         changeDisplay.innerText = "R$ 0,00";
         changeDisplay.className = "text-lg font-black text-slate-400 font-mono-receipt leading-none mt-0.5";
-        if (sugestaoBox) sugestaoBox.classList.add('hidden');
         return;
       }
 
       const diff = cash - grandTotal;
-      if (diff > 0.009) {
+      if (diff >= 0) {
         changeDisplay.innerText = `R$ ${diff.toFixed(2).replace('.', ',')}`;
         changeDisplay.className = "text-lg font-black text-emerald-700 font-mono-receipt leading-none mt-0.5";
-
-        // Exibe o crachá de cada cédula e moeda necessária
-        if (sugestaoBox && itensContainer) {
-          const breakdown = getChangeBreakdown(diff);
-          itensContainer.innerHTML = breakdown.map(item => `
-            <div class="flex items-center gap-1 px-2 py-1 rounded-lg border shadow-xs font-black text-xs ${item.color}">
-              <span class="text-[10px] bg-black/20 px-1 py-0.5 rounded font-bold">${item.qty}x</span>
-              <span class="tracking-tight">${item.type === 'nota' ? '💵' : '🪙'} ${item.label}</span>
-            </div>
-          `).join('');
-          sugestaoBox.classList.remove('hidden');
-        }
-
-      } else if (Math.abs(diff) <= 0.009) {
-        changeDisplay.innerText = "R$ 0,00";
-        changeDisplay.className = "text-lg font-black text-emerald-700 font-mono-receipt leading-none mt-0.5";
-        if (sugestaoBox) sugestaoBox.classList.add('hidden');
       } else {
         changeDisplay.innerText = `Falta R$ ${Math.abs(diff).toFixed(2).replace('.', ',')}`;
         changeDisplay.className = "text-xs font-black text-rose-600 font-mono-receipt leading-none mt-0.5";
-        if (sugestaoBox) sugestaoBox.classList.add('hidden');
       }
     }
 
@@ -1171,6 +1449,11 @@
       document.getElementById('cashReceivedInput').value = val.toFixed(2).replace('.', ',');
       selectPayment('Dinheiro');
       calculateChange();
+
+      const grandTotal = getGrandTotal();
+      if (val > grandTotal) {
+        openVisualChangeModal(val - grandTotal);
+      }
     }
 
     function setExactCash() {
